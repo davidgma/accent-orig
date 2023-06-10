@@ -1,5 +1,8 @@
+<header>
+  <p>Status: {{ status }}</p>
+</header>
 <section id="record" (click)="record()">
-   <app-mic
+  <app-mic
     [iconSize]="40"
     [strokeColour]="'green'"
     [fillColour]="'green'"
@@ -14,3 +17,4 @@
     title="Playback"
   ></app-play>
 </section>
+<audio controls class="audio-element hide"></audio>

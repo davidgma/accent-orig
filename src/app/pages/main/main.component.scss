@@ -1,7 +1,14 @@
 section {
-  height: 50%;
+  height: 48%;
   border: 2px solid green;
   display: flex;
   justify-content: center;
+  align-items: center;
+}
+
+header {
+  height: 4%;
+  font-size: 3vh;
+  display: flex;
   align-items: center;
 }
