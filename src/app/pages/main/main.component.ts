@@ -9,9 +9,11 @@ import { AudioRecorderService } from 'src/app/services/audio-recorder.service';
 export class MainComponent {
 
   private audioAsBlob = new Blob();
+  // audioElement?: HTMLAudioElement;
+  // audioElementSource?: HTMLSourceElement;
 
 
-  constructor(private audioRecorder: AudioRecorderService) { }
+  constructor(private audioRecorder: AudioRecorderService) {}
 
   status: Status = Status.Idle;
 
@@ -43,6 +45,18 @@ export class MainComponent {
       }
     }
 
+    this.audioRecorder.recordingReady.subscribe((blob) => {
+      this.audioAsBlob = blob;
+    });
+
+    // this.audioElement = <HTMLAudioElement>document.getElementsByClassName("audio-element")[0];
+    // if (this.audioElement.getElementsByTagName("source")[0] === null) {
+    //   this.audioElementSource = this.createSourceForAudioElement();
+    // }
+    // else {
+    //   this.audioElementSource = this.audioElement.getElementsByTagName("source")[0];
+    // }
+
   }
 
   async lostFocus() {
@@ -66,28 +80,45 @@ export class MainComponent {
 
     this.status = Status.Monitoring;
     await this.startMonitoring();
-
+    this.audioRecorder.pause();
   }
 
   async play() {
-    if (this.audioAsBlob.size === 0) {
-      return;
-    }
+
 
     console.log("play");
 
     if (this.status === Status.Recording) {
+      console.log("playing from recorded...");
       await this.stopRecording();
+      // wait for the new recording to be ready
+      this.audioRecorder.recordingReady.subscribe((blob) => {
+        this.audioRecorder.playBlob(blob).then(() => {
+
+          console.log("Finished playing audio");
+        });
+      });
+
+
+      // temp:
+      //
+      // this.refresh();
     }
 
-    if (this.status === Status.Playing) {
+    else if (this.audioAsBlob.size === 0) {
+      return;
+    }
+
+    else if (this.status === Status.Playing) {
+      this.status = Status.Monitoring;
       this.stopPlaying();
-      this.startMonitoring();
     }
     else {
+      this.status = Status.Playing;
+      this.refresh();
       await this.startPlaying();
+      this.status = Status.Monitoring;
       console.log("Finished playing audio");
-      this.stopRecording();
     }
 
   }
@@ -106,22 +137,28 @@ export class MainComponent {
         break;
       case Status.Playing:
         this.stopPlaying();
-        this.startMonitoring();
+        // this.startMonitoring();
         this.startRecording();
         break;
       case Status.Recording:
+        this.status = Status.Monitoring;
         await this.stopRecording();
-        await this.startMonitoring();
+        // temp:
+        this.refresh();
     }
 
   }
 
+  async refresh() {
+    await this.cancelRecording();
+    await this.startMonitoring();
+    this.audioRecorder.audioBlobs = new Array<Blob>();
+    this.audioRecorder.pause();
+  }
+
   async startMonitoring() {
 
-
-
     console.log("startMonitoring");
-
 
     await this.audioRecorder.ready;
 
@@ -133,8 +170,6 @@ export class MainComponent {
     }
 
     console.log("Stream active: " + this.audioRecorder.mediaRecorder.stream.active);
-
-
 
     await this.audioRecorder.start()
       .then(() => { //on success
@@ -180,6 +215,9 @@ export class MainComponent {
         };
       });
 
+    console.log("number of blobs: " + this.audioRecorder.audioBlobs.length);
+
+
   }
 
 
@@ -187,7 +225,10 @@ export class MainComponent {
     console.log("startRecording");
 
     // Discard any previous recording from the monitoring
-    this.audioRecorder.audioBlobs = new Array<Blob>();
+    // this.audioRecorder.audioBlobs = new Array<Blob>();
+
+    // this.audioRecorder.mediaRecorder.requestData();
+    this.audioRecorder.unPause();
   }
 
   private async cancelRecording() {
@@ -200,99 +241,32 @@ export class MainComponent {
 
   }
 
+  private async saveRecording() {
+    console.log("in saveRecording");
+    this.audioRecorder.mediaRecorder.requestData();
+  }
+
   private async stopRecording() {
     console.log("stopRecording");
     // Get the latest blob
     //save audio type to pass to set the Blob type
     if (this.audioRecorder.mediaRecorder !== null) {
 
-      //add a dataavailable event listener in order to store the audio data Blobs when recording
-      this.audioRecorder.mediaRecorder.addEventListener("dataavailable", event => {
-        //store audio Blob object
-        console.log("blob gathered");
-
-        this.audioRecorder.audioBlobs.push(event.data);
-        console.log("blobs size: " + this.audioRecorder.audioBlobs.length);
-        let mimeType = this.audioRecorder.mediaRecorder.mimeType;
-        this.audioAsBlob = new Blob(this.audioRecorder.audioBlobs, { type: mimeType });
-      });
-
+      this.audioRecorder.pause();
       this.audioRecorder.mediaRecorder.requestData();
-
     }
 
   }
 
+
   private async startPlaying() {
-    return new Promise<void>((resolve, reject) => {
-      console.log("startPlaying");
-      this.status = Status.Playing;
-      let audioElement = <HTMLAudioElement>document.getElementsByClassName("audio-element")[0];
-      if (audioElement == null) {
-        console.log("Error in startPlaying: audioElement is null");
-        reject();
-      }
-      let audioElementSource = audioElement.getElementsByTagName("source")[0];
-      if (audioElementSource == null) {
-        audioElementSource = this.createSourceForAudioElement();
-      }
+    await this.audioRecorder.playBlob(this.audioAsBlob);
 
-      //read content of files (Blobs) asynchronously
-      let reader = new FileReader();
-
-      //once content has been read
-      reader.onload = (e) => {
-        //store the base64 URL that represents the URL of the recording audio
-        if (e.target == null) {
-          console.log("From startPlaying: Error: e.target is null");
-          reject();
-        }
-        else {
-          let base64URL = e.target.result;
-          //If this is the first audio playing, create a source element
-          //as pre populating the HTML with a source of empty src causes error
-          // if (!this.audioElementSource) //if its not defined create it (happens first time only)
-
-          //set the audio element's source using the base64 URL
-          if (base64URL == null) {
-            console.log("From startPlaying: Error: base64URL is null");
-            reject();
-            return;
-          }
-
-          audioElementSource.src = base64URL.toString();
-
-          //set the type of the audio element based on the recorded audio's Blob type
-          let BlobType = this.audioAsBlob.type.includes(";") ?
-            this.audioAsBlob.type.substr(0, this.audioAsBlob.type.indexOf(';')) : this.audioAsBlob.type;
-          audioElementSource.type = BlobType
-
-          //call the load method as it is used to update the audio element after changing the source or other settings
-          audioElement.load();
-
-          //play the audio after successfully setting new src and type that corresponds to the recorded audio
-          console.log("Playing audio...");
-          if (audioElement != null) {
-            audioElement.play().then(() => {
-              audioElement?.addEventListener("ended", () => {
-                // console.log("complete event");
-                resolve();
-              });
-            });
-          }
-
-        };
-
-      }
-
-      //read content and convert it to a URL (base64)
-      reader.readAsDataURL(this.audioAsBlob);
-
-    });
   }
 
   private stopPlaying() {
     console.log("stopPlaying");
+    // this.audioRecorder.
     let audioElement = <HTMLAudioElement>document.getElementsByClassName("audio-element")[0];
     if (audioElement != null) {
       audioElement.pause();
@@ -329,5 +303,6 @@ enum Status {
   Idle = "Idle",
   Monitoring = "Monitoring",
   Recording = "Recording",
-  Playing = "Playing",
+  Saving = "Saving",
+  Playing = "Playing"
 }

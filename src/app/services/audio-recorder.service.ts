@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable } from '@angular/core';
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +15,8 @@ export class AudioRecorderService {
   streamBeingCaptured: MediaStream = new MediaStream(); /*of type MediaStream*/
 
   ready: Promise<void>;
+
+  recordingReady = new EventEmitter<Blob>();
 
 
 
@@ -67,17 +69,41 @@ export class AudioRecorderService {
 
     console.log("audio-recorder start called");
     console.log("this.mediaRecorder active: "
-    + this.mediaRecorder.stream.active);
+      + this.mediaRecorder.stream.active);
 
 
     //clear previously saved audio Blobs, if any
-    this.audioBlobs = [];
+    // this.audioBlobs = [];
 
-    
+    //add a dataavailable event listener in order to store the audio data Blobs when recording
+    this.mediaRecorder.addEventListener("dataavailable", event => {
+      //store audio Blob object
+      let blob: Blob = event.data;
+      console.log("blob gathered size: " + blob.size);
+
+      if (blob.size > 0) {
+        this.audioBlobs.push(blob);
+        // if (this.audioBlobs.length === 1) {
+        for (let b of this.audioBlobs) {
+          console.log("blob sizes: " + b.size);
+        }
+        let mimeType = this.mediaRecorder.mimeType;
+        // console.log("mimType:" + mimeType);
+        let combined = new Blob(this.audioBlobs, { type: mimeType });
+        console.log("total size: " + combined.size);
+
+        // this.playBlob(combined);
+        this.recordingReady.emit(combined);
+        // }
+      }
+    });
 
     //start the recording by calling the start method on the media recorder
-    this.mediaRecorder.start();
-    console.log("mediaRecorder state: " + this.mediaRecorder.state);
+    // console.log("mediaRecorder state: " + this.mediaRecorder.state);
+    if (this.mediaRecorder.state !== "recording") {
+      this.mediaRecorder.start();
+
+    }
 
 
     /* errors are not handled in the API because if its handled and the promise is chained, the .then after the catch will be executed*/
@@ -89,7 +115,8 @@ export class AudioRecorderService {
   /** Cancel audio recording*/
   async cancel() {
 
-    this.audioBlobs = new Array();
+    // zx
+    // this.audioBlobs = new Array();
 
     //stop the recording feature
     this.mediaRecorder.stop();
@@ -124,4 +151,100 @@ export class AudioRecorderService {
     up by the garbage collector as well as any event handlers/listeners associated with it.
     getEventListeners(audioRecorder.mediaRecorder) will return an empty array of events.*/
   }
+
+  pause() {
+    this.mediaRecorder.pause();
+  }
+
+  unPause() {
+    this.mediaRecorder.resume();
+  }
+
+  async playBlob(blob: Blob): Promise<void> {
+    let p = new Promise<void>((resolve, reject) => {
+
+      console.log("playBlob");
+
+      let audioElement = <HTMLAudioElement>document.getElementsByClassName("audio-element")[0];
+      if (audioElement == null) {
+        console.log("Error in startPlaying: audioElement is null");
+        reject();
+      }
+      let audioElementSource = audioElement.getElementsByTagName("source")[0];
+      if (audioElementSource == null) {
+        audioElementSource = this.createSourceForAudioElement();
+      }
+
+      //read content of files (Blobs) asynchronously
+      let reader = new FileReader();
+
+      //once content has been read
+      reader.onload = (e) => {
+        //store the base64 URL that represents the URL of the recording audio
+        if (e.target == null) {
+          console.log("From startPlaying: Error: e.target is null");
+          reject();
+          return;
+        }
+        else {
+          let base64URL = e.target.result;
+          //If this is the first audio playing, create a source element
+          //as pre populating the HTML with a source of empty src causes error
+          // if (!this.audioElementSource) //if its not defined create it (happens first time only)
+
+          //set the audio element's source using the base64 URL
+          if (base64URL == null) {
+            console.log("From startPlaying: Error: base64URL is null");
+            reject();
+            return;
+          }
+
+          audioElementSource.src = base64URL.toString();
+
+          //set the type of the audio element based on the recorded audio's Blob type
+          let BlobType = blob.type.includes(";") ?
+            blob.type.substr(0, blob.type.indexOf(';')) : blob.type;
+          audioElementSource.type = BlobType
+
+          //call the load method as it is used to update the audio element after changing the source or other settings
+          audioElement.load();
+
+          //play the audio after successfully setting new src and type that corresponds to the recorded audio
+          if (audioElement != null) {
+            console.log("Playing blob audio...");
+            // audioElement.currentTime = 3;
+            audioElement.play().then(() => {
+              audioElement?.addEventListener("ended", () => {
+                // console.log("Finished playing audio");
+                resolve();
+              });
+            });
+          }
+
+        };
+
+      }
+      //read content and convert it to a URL (base64)
+      reader.readAsDataURL(blob);
+    });
+    return p;
+
+  }
+
+  /* Creates a source element for the the audio element in the HTML document*/
+  private createSourceForAudioElement(): HTMLSourceElement {
+
+    let sourceElement = document.createElement("source");
+    // console.log("sourceElement: " + JSON.stringify(sourceElement));
+
+    let audioElement = <HTMLAudioElement>document.getElementsByClassName("audio-element")[0];
+    // console.log("audioElement: " + JSON.stringify(audioElement));
+    audioElement.appendChild(sourceElement);
+    return sourceElement;
+
+    // this.audioElementSource = sourceElement;
+  }
+
+
+
 }
