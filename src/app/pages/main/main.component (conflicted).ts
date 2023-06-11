@@ -16,56 +16,26 @@ export class MainComponent {
   status: Status = Status.Idle;
 
   ngOnInit() {
+    this.startMonitoring();
     window.addEventListener("focus", () => {
       console.log("Window gained focus");
-      this.gainedFocus();
-    });
-    window.addEventListener("pageshow", () => {
-      console.log("Window pageshow");
-      this.gainedFocus();
+      this.startMonitoring();
     });
     window.addEventListener("blur", () => {
       console.log("Window lost focus");
-      this.lostFocus();
+      this.cancelRecording();
+    });
+    window.addEventListener("pageshow", () => {
+      console.log("Window pageshow");
+      this.startMonitoring();
     });
     window.addEventListener("pagehide", () => {
       console.log("Window pagehide");
-      this.lostFocus();
+      this.cancelRecording();
     });
     document.onvisibilitychange = () => {
-      if (document.visibilityState === "hidden") {
-        console.log("Document hidden");
-        this.lostFocus();
-      }
-      if (document.visibilityState === "visible") {
-        console.log("Document visible");
-        this.gainedFocus();
-      }
+      if (document.visibilityState === "hidden")
     }
-
-  }
-
-  async lostFocus() {
-
-    if (this.status === Status.Idle) {
-      console.log("Already idle");
-      return;
-    }
-
-    this.status = Status.Idle;
-    await this.cancelRecording();
-
-  }
-
-  async gainedFocus() {
-
-    if (this.status === Status.Monitoring) {
-      console.log("Already monitoring");
-      return;
-    }
-
-    this.status = Status.Monitoring;
-    await this.startMonitoring();
 
   }
 
@@ -96,46 +66,22 @@ export class MainComponent {
   async record() {
     console.log("record");
 
-    switch (this.status) {
-      case Status.Idle:
-        console.log("Error: shouldn't have been idle.");
-        break;
-      case Status.Monitoring:
-        this.status = Status.Recording;
-        await this.startRecording();
-        break;
-      case Status.Playing:
-        this.stopPlaying();
-        this.startMonitoring();
-        this.startRecording();
-        break;
-      case Status.Recording:
-        await this.stopRecording();
-        await this.startMonitoring();
+    if (this.status === Status.Playing) {
+      this.stopPlaying();
     }
 
+    if (this.status === Status.Recording) {
+      await this.stopRecording();
+      await this.startMonitoring();
+    }
+    else {
+      await this.startRecording();
+    }
   }
 
   async startMonitoring() {
-
-
-
     console.log("startMonitoring");
-
-
-    await this.audioRecorder.ready;
-
-    // Check the recorder is active
-    if (this.audioRecorder.mediaRecorder.stream.active === false) {
-      console.log("in startMonitoring: stream is inactive");
-      this.audioRecorder.ready = this.audioRecorder.setupRecorder();
-      await this.audioRecorder.ready;
-    }
-
-    console.log("Stream active: " + this.audioRecorder.mediaRecorder.stream.active);
-
-
-
+    this.status = Status.Monitoring;
     await this.audioRecorder.start()
       .then(() => { //on success
 
@@ -179,47 +125,58 @@ export class MainComponent {
             console.log("An error occurred with the error name " + error.name);
         };
       });
-
   }
 
 
   private async startRecording() {
     console.log("startRecording");
-
+    this.status = Status.Recording;
     // Discard any previous recording from the monitoring
     this.audioRecorder.audioBlobs = new Array<Blob>();
   }
 
   private async cancelRecording() {
-
-
-    console.log("Cancelling recording...");
+    console.log("cancelRecording");
     //stop the recording using the audio recording API
-    await this.audioRecorder.cancel();
-    // console.log("Cancelled.");
+    await this.audioRecorder.stop()
+      .then(audioAsBlob => {
+        console.log("Recording cancelled");
+        this.audioAsBlob = new Blob();
 
+      })
+      .catch(error => {
+        //Error handling structure
+        switch (error.name) {
+          case 'InvalidStateError': //error from the MediaRecorder.stop
+            console.log("An InvalidStateError has occurred.");
+            break;
+          default:
+            console.log("An error occurred with the error name " + error.name);
+        };
+      });
   }
 
   private async stopRecording() {
     console.log("stopRecording");
-    // Get the latest blob
-    //save audio type to pass to set the Blob type
-    if (this.audioRecorder.mediaRecorder !== null) {
+    //stop the recording using the audio recording API
+    await this.audioRecorder.stop()
+      .then(audioAsBlob => {
+        this.audioAsBlob = audioAsBlob;
+        //Play recorder audio
+        //playAudio(audioAsBlob);
 
-      //add a dataavailable event listener in order to store the audio data Blobs when recording
-      this.audioRecorder.mediaRecorder.addEventListener("dataavailable", event => {
-        //store audio Blob object
-        console.log("blob gathered");
-
-        this.audioRecorder.audioBlobs.push(event.data);
-        console.log("blobs size: " + this.audioRecorder.audioBlobs.length);
-        let mimeType = this.audioRecorder.mediaRecorder.mimeType;
-        this.audioAsBlob = new Blob(this.audioRecorder.audioBlobs, { type: mimeType });
+      })
+      .catch(error => {
+        //Error handling structure
+        switch (error.name) {
+          case 'InvalidStateError': //error from the MediaRecorder.stop
+            console.log("An InvalidStateError has occurred.");
+            break;
+          default:
+            console.log("An error occurred with the error name " + error.name);
+        };
       });
 
-      this.audioRecorder.mediaRecorder.requestData();
-
-    }
 
   }
 
