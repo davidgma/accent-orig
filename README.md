@@ -8,3 +8,5 @@ improve your accent when learning a foreign language.
 It records you speaking and then you can play back what you just said.
 
 Based on https://ralzohairi.medium.com/audio-recording-in-javascript-96eed45b75ee
+
+https://codepen.io/ralzohairi/pen/zYrKLWy
