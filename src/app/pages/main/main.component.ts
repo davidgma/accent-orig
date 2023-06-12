@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
-import { AudioRecorderService } from 'src/app/services/audio-recorder.service';
+import { Component, EventEmitter } from '@angular/core';
+import { LoggerService } from 'src/app/services/logger.service';
+import { PlaybackService, PlayingState } from 'src/app/services/playback.service';
+import { RecordingService, RecordingState } from 'src/app/services/recording.service';
 
 @Component({
   selector: 'app-main',
@@ -7,271 +9,158 @@ import { AudioRecorderService } from 'src/app/services/audio-recorder.service';
   styleUrls: ['./main.component.scss']
 })
 export class MainComponent {
+  private moduleName = 'MainComponent';
+
+  // To stop a function running more than once at the same time
+  private isGainingFocus = false;
+  private isLosingFocus = false;
 
   private audioAsBlob = new Blob();
-  // audioElement?: HTMLAudioElement;
-  // audioElementSource?: HTMLSourceElement;
 
-
-  constructor(private audioRecorder: AudioRecorderService) {}
-
-  status: Status = Status.Idle;
+  constructor(public rs: RecordingService, public ps: PlaybackService, private ls: LoggerService) { }
 
   ngOnInit() {
+    let functionName = 'ngOnInit';
+
+    // Set debug mode
+    this.ls.debug = 1;
+
     window.addEventListener("focus", () => {
-      console.log("Window gained focus");
+      this.ls.log('Window gained focus', this.moduleName, functionName);
       this.gainedFocus();
     });
     window.addEventListener("pageshow", () => {
-      console.log("Window pageshow");
+      this.ls.log('Window pageshow', this.moduleName, functionName);
       this.gainedFocus();
     });
     window.addEventListener("blur", () => {
-      console.log("Window lost focus");
+      this.ls.log('Window lost focus', this.moduleName, functionName);
       this.lostFocus();
     });
     window.addEventListener("pagehide", () => {
-      console.log("Window pagehide");
+      this.ls.log('Window pagehide', this.moduleName, functionName);
       this.lostFocus();
     });
     document.onvisibilitychange = () => {
       if (document.visibilityState === "hidden") {
-        console.log("Document hidden");
+        this.ls.log('Document hidden', this.moduleName, functionName);
         this.lostFocus();
       }
       if (document.visibilityState === "visible") {
-        console.log("Document visible");
+        this.ls.log('Document visible', this.moduleName, functionName);
         this.gainedFocus();
       }
     }
 
-    this.audioRecorder.recordingReady.subscribe((blob) => {
-      this.audioAsBlob = blob;
-    });
+    // Setup the audio part - this can only be done once
+    // the template is active
+    this.ps.setupAudio();
 
-    // this.audioElement = <HTMLAudioElement>document.getElementsByClassName("audio-element")[0];
-    // if (this.audioElement.getElementsByTagName("source")[0] === null) {
-    //   this.audioElementSource = this.createSourceForAudioElement();
-    // }
-    // else {
-    //   this.audioElementSource = this.audioElement.getElementsByTagName("source")[0];
-    // }
+    this.logStates();
 
   }
 
   async lostFocus() {
+    let functionName = 'lostFocus';
+    this.ls.log('Called. ', this.moduleName, functionName, 1);
 
-    if (this.status === Status.Idle) {
-      console.log("Already idle");
+    if (this.isLosingFocus === true) {
       return;
     }
-
-    this.status = Status.Idle;
-    await this.cancelRecording();
-
+    this.isLosingFocus = true;
+    if (this.rs.state !== RecordingState.Stopped) {
+      await this.rs.stop();
+    }
+    this.isLosingFocus = false;
+    this.ls.log('Final. ', this.moduleName, functionName, 1);
   }
 
   async gainedFocus() {
+    let functionName = 'gainedFocus';
 
-    if (this.status === Status.Monitoring) {
-      console.log("Already monitoring");
+    if (this.isGainingFocus === true) {
       return;
     }
+    this.isGainingFocus = true;
 
-    this.status = Status.Monitoring;
-    await this.startMonitoring();
-    this.audioRecorder.pause();
+    this.ls.log('Calling start...', this.moduleName, functionName, 1);
+    await this.rs.start();
+    this.ls.log('Calling pause...', this.moduleName, functionName, 1);
+    this.rs.pause();
+
+    this.isGainingFocus = false;
+    // this.focused.emit();
+  }
+
+  private logStates() {
+    let functionName = 'logStates';
+    this.ls.log("RecordingService state: " + this.rs.state, this.moduleName, functionName);
+    this.ls.log("PlaybackService state: " + this.ps.state, this.moduleName, functionName);
   }
 
   async play() {
+    let functionName = 'play';
+    this.ls.log('play', this.moduleName, functionName);
 
-
-    console.log("play");
-
-    if (this.status === Status.Recording) {
-      console.log("playing from recorded...");
-      await this.stopRecording();
-      // wait for the new recording to be ready
-      this.audioRecorder.recordingReady.subscribe((blob) => {
-        this.audioRecorder.playBlob(blob).then(() => {
-
-          console.log("Finished playing audio");
-        });
-      });
-
-
-      // temp:
-      //
-      // this.refresh();
+    // Cancel any audio currently playing
+    if (this.ps.state === PlayingState.Playing) {
+      this.ps.cancel();
     }
 
+    // If it's currently recording, stop the
+    // recording and wait for the blob to be ready
+    if (this.rs.state === RecordingState.Recording) {
+      // this.rs.stop();
+      let blob = await this.rs.getData();
+
+      this.ps.play(blob);
+      this.ls.log('Calling restart 1', this.moduleName, functionName, 1);
+      this.rs.restart();
+    }
     else if (this.audioAsBlob.size === 0) {
       return;
     }
-
-    else if (this.status === Status.Playing) {
-      this.status = Status.Monitoring;
-      this.stopPlaying();
-    }
     else {
-      this.status = Status.Playing;
-      this.refresh();
-      await this.startPlaying();
-      this.status = Status.Monitoring;
-      console.log("Finished playing audio");
+      this.ls.log('Calling restart 2', this.moduleName, functionName, 1);
+      this.rs.restart();
+      await this.ps.play(this.audioAsBlob);
+      this.ls.log('Finished playing audio', this.moduleName, functionName);
     }
 
   }
-
 
   async record() {
-    console.log("record");
+    let functionName = 'record';
+    this.ls.log('record', this.moduleName, functionName);
 
-    switch (this.status) {
-      case Status.Idle:
-        console.log("Error: shouldn't have been idle.");
+    // Check that the recorder is recording
+    if (this.rs.state !== RecordingState.Recording) {
+      await this.rs.start();
+    }
+
+    // Stop any current playing audio
+    if (this.ps.state === PlayingState.Playing) {
+      this.ps.cancel();
+    }
+
+    switch (this.rs.state) {
+      case RecordingState.Paused:
+        this.rs.start();
         break;
-      case Status.Monitoring:
-        this.status = Status.Recording;
-        await this.startRecording();
+      case RecordingState.Recording:
+        this.audioAsBlob = await this.rs.getData();
+        this.ls.log('Blob received size ' + this.audioAsBlob.size, this.moduleName, functionName, 1);
+        this.rs.pause();
         break;
-      case Status.Playing:
-        this.stopPlaying();
-        // this.startMonitoring();
-        this.startRecording();
+      case RecordingState.Stopped:
+        this.rs.start();
         break;
-      case Status.Recording:
-        this.status = Status.Monitoring;
-        await this.stopRecording();
-        // temp:
-        this.refresh();
+      case RecordingState.UnInitialized:
+        this.rs.start();
     }
 
   }
 
-  async refresh() {
-    await this.cancelRecording();
-    await this.startMonitoring();
-    this.audioRecorder.audioBlobs = new Array<Blob>();
-    this.audioRecorder.pause();
-  }
-
-  async startMonitoring() {
-
-    console.log("startMonitoring");
-
-    await this.audioRecorder.ready;
-
-    // Check the recorder is active
-    if (this.audioRecorder.mediaRecorder.stream.active === false) {
-      console.log("in startMonitoring: stream is inactive");
-      this.audioRecorder.ready = this.audioRecorder.setupRecorder();
-      await this.audioRecorder.ready;
-    }
-
-    console.log("Stream active: " + this.audioRecorder.mediaRecorder.stream.active);
-
-    await this.audioRecorder.start()
-      .then(() => { //on success
-
-        //store the recording start time to display the elapsed time according to it
-        this.audioRecordStartTime = new Date();
-
-      })
-      .catch((error: { message: string | string[]; name: string; }) => { //on error
-        //No Browser Support Error
-        if (error.message.includes("mediaDevices API or getUserMedia method is not supported in this browser.")) {
-          console.log("To record audio, use browsers like Chrome and Firefox.");
-        }
-
-        //Error handling structure
-        switch (error.name) {
-          case 'AbortError': //error from navigator.mediaDevices.getUserMedia
-            console.log("An AbortError has occurred.");
-            break;
-          case 'NotAllowedError': //error from navigator.mediaDevices.getUserMedia
-            console.log("A NotAllowedError has occurred. User might have denied permission.");
-            break;
-          case 'NotFoundError': //error from navigator.mediaDevices.getUserMedia
-            console.log("A NotFoundError has occurred.");
-            break;
-          case 'NotReadableError': //error from navigator.mediaDevices.getUserMedia
-            console.log("A NotReadableError has occurred.");
-            break;
-          case 'SecurityError': //error from navigator.mediaDevices.getUserMedia or from the MediaRecorder.start
-            console.log("A SecurityError has occurred.");
-            break;
-          case 'TypeError': //error from navigator.mediaDevices.getUserMedia
-            console.log("A TypeError has occurred.");
-            break;
-          case 'InvalidStateError': //error from the MediaRecorder.start
-            console.log("An InvalidStateError has occurred.");
-            break;
-          case 'UnknownError': //error from the MediaRecorder.start
-            console.log("An UnknownError has occurred.");
-            break;
-          default:
-            console.log("An error occurred with the error name " + error.name);
-        };
-      });
-
-    console.log("number of blobs: " + this.audioRecorder.audioBlobs.length);
-
-
-  }
-
-
-  private async startRecording() {
-    console.log("startRecording");
-
-    // Discard any previous recording from the monitoring
-    // this.audioRecorder.audioBlobs = new Array<Blob>();
-
-    // this.audioRecorder.mediaRecorder.requestData();
-    this.audioRecorder.unPause();
-  }
-
-  private async cancelRecording() {
-
-
-    console.log("Cancelling recording...");
-    //stop the recording using the audio recording API
-    await this.audioRecorder.cancel();
-    // console.log("Cancelled.");
-
-  }
-
-  private async saveRecording() {
-    console.log("in saveRecording");
-    this.audioRecorder.mediaRecorder.requestData();
-  }
-
-  private async stopRecording() {
-    console.log("stopRecording");
-    // Get the latest blob
-    //save audio type to pass to set the Blob type
-    if (this.audioRecorder.mediaRecorder !== null) {
-
-      this.audioRecorder.pause();
-      this.audioRecorder.mediaRecorder.requestData();
-    }
-
-  }
-
-
-  private async startPlaying() {
-    await this.audioRecorder.playBlob(this.audioAsBlob);
-
-  }
-
-  private stopPlaying() {
-    console.log("stopPlaying");
-    // this.audioRecorder.
-    let audioElement = <HTMLAudioElement>document.getElementsByClassName("audio-element")[0];
-    if (audioElement != null) {
-      audioElement.pause();
-    }
-  }
 
   /** Stores the actual start time when an audio recording begins to take place to ensure elapsed time start time is accurate*/
   private audioRecordStartTime = new Date();
@@ -283,26 +172,7 @@ export class MainComponent {
   private elapsedTimeTimer: any = null;
 
 
-  /* Creates a source element for the the audio element in the HTML document*/
-  private createSourceForAudioElement(): HTMLSourceElement {
-
-    let sourceElement = document.createElement("source");
-    // console.log("sourceElement: " + JSON.stringify(sourceElement));
-
-    let audioElement = <HTMLAudioElement>document.getElementsByClassName("audio-element")[0];
-    // console.log("audioElement: " + JSON.stringify(audioElement));
-    audioElement.appendChild(sourceElement);
-    return sourceElement;
-
-    // this.audioElementSource = sourceElement;
-  }
-
 }
 
-enum Status {
-  Idle = "Idle",
-  Monitoring = "Monitoring",
-  Recording = "Recording",
-  Saving = "Saving",
-  Playing = "Playing"
-}
+
+

@@ -1,5 +1,5 @@
 <header>
-  <p>Status: {{ status }}</p>
+  <p>Recording: {{ rs.state }}, Playback: {{ ps.state}}</p>
 </header>
 <section id="record" (click)="record()">
   <app-mic
