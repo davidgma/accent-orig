@@ -85,6 +85,8 @@ export class PlaybackService {
               this.audio.play().then(() => {
                 this.audio?.addEventListener("ended", () => {
                   // this.ls.log("Finished playing audio");
+                  this.state = PlayingState.Ready;
+                  this.stateChange.emit(this.state);
                   resolve();
                 });
               });

@@ -114,15 +114,15 @@ export class MainComponent {
       let blob = await this.rs.getData();
 
       this.ps.play(blob);
-      this.ls.log('Calling restart 1', this.moduleName, functionName, 1);
-      this.rs.restart();
+      // this.ls.log('Calling restart 1', this.moduleName, functionName, 1);
+      // this.rs.restart();
     }
     else if (this.audioAsBlob.size === 0) {
       return;
     }
     else {
-      this.ls.log('Calling restart 2', this.moduleName, functionName, 1);
-      this.rs.restart();
+      // this.ls.log('Calling restart 2', this.moduleName, functionName, 1);
+      // this.rs.restart();
       await this.ps.play(this.audioAsBlob);
       this.ls.log('Finished playing audio', this.moduleName, functionName);
     }
