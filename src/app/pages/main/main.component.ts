@@ -27,7 +27,7 @@ export class MainComponent {
     let functionName = 'ngOnInit';
 
     // Set debug mode
-    this.ls.debug = 0;
+    this.ls.debug = 1;
 
     window.addEventListener("focus", () => {
       this.ls.log('Window gained focus', this.moduleName, functionName);

@@ -14,6 +14,7 @@ export class RecordingService {
   stateChange = new EventEmitter<RecordingState>();
   private dataReady = new EventEmitter<Blob>();
   private blobs = new Array<Blob>();
+  private mimeType: string | undefined = undefined;
 
   // To stop a function running more than once at the same time
   private isInitializing = false;
@@ -86,6 +87,9 @@ export class RecordingService {
           this.ls.log("blob sizes: " + b.size, this.moduleName, functionName);
         }
         let mimeType = this.recorder?.mimeType;
+        // console.log("mimeType: " + mimeType);
+        this.mimeType = mimeType;
+
         let combined = new Blob(this.blobs, { type: mimeType });
         this.ls.log("total size: " + combined.size, this.moduleName, functionName);
 
@@ -345,6 +349,16 @@ export class RecordingService {
       + ", number of tracks: " + this.stream?.getTracks().length
       + ", track 1: " + this.stream?.getTracks()[0].readyState;
     return status;
+  }
+
+  getMimeType(): string {
+
+    let ret = "Undefined: No recording data yet."
+    if (this.mimeType !== undefined) {
+      ret = this.mimeType;
+    }
+    // console.log("in getMimeType, returning " + ret);
+    return ret;
   }
 
 }
