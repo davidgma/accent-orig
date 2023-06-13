@@ -11,6 +11,10 @@ import { RecordingService, RecordingState } from 'src/app/services/recording.ser
 export class MainComponent {
   private moduleName = 'MainComponent';
 
+  // Colours for icons
+  defaultColour = "black";
+  selectedColour = "red";
+
   // To stop a function running more than once at the same time
   private isGainingFocus = false;
   private isLosingFocus = false;

@@ -14,6 +14,8 @@ import { NavComponent } from './nav/nav.component';
 import { InfoComponent } from './pages/info/info.component';
 import { SettingsComponent } from './pages/settings/settings.component';
 import { DebugIconComponent } from './icons/debug-icon/debug-icon.component';
+import { DebugComponent } from './pages/debug/debug.component';
+import { IconComponent } from './icons/icon/icon.component';
 
 @NgModule({
   declarations: [
@@ -27,7 +29,9 @@ import { DebugIconComponent } from './icons/debug-icon/debug-icon.component';
     NavComponent,
     InfoComponent,
     SettingsComponent,
-    DebugIconComponent
+    DebugIconComponent,
+    DebugComponent,
+    IconComponent
   ],
   imports: [
     BrowserModule,

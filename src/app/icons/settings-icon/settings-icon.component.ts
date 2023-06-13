@@ -1,14 +1,10 @@
 import { Component, Input } from '@angular/core';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-settings-icon',
   templateUrl: './settings-icon.component.html',
   styleUrls: ['./settings-icon.component.scss']
 })
-export class SettingsIconComponent {
-  @Input() iconSize = 10;
-  @Input() strokeColour = "white";
-  @Input() fillColour = "grey";
-  @Input() selected = false;
-  @Input() text: string | null = "Settings";
+export class SettingsIconComponent extends IconComponent {
 }

@@ -1,30 +1,38 @@
 <nav>
     <app-home-icon
       [iconSize]="40"
-      [strokeColour]="strokeHome"
-      [fillColour]="fillHome"
+      [defaultColour]="defaultColour"
+      [selectedColour]="selectedColour"
       title="Home"
+      [text]="'Home'"
+      [routeName]="'/home'"
       routerLink="/home"
     ></app-home-icon>
     <app-info-icon
       [iconSize]="5"
-      [strokeColour]="strokeInfo"
-      [fillColour]="fillInfo"
+      [defaultColour]="defaultColour"
+      [selectedColour]="selectedColour"
       title="Info"
+      [text]="'Info'"
+      [routeName]="'/info'"
       routerLink="/info"
     ></app-info-icon>
     <app-settings-icon
       [iconSize]="5"
-      [strokeColour]="strokeSettings"
-      [fillColour]="fillSettings"
+      [defaultColour]="defaultColour"
+      [selectedColour]="selectedColour"
       title="Settings"
+      [text]="'Settings'"
+      [routeName]="'/settings'"
       routerLink="/settings"
     ></app-settings-icon>
     <app-debug-icon
       [iconSize]="7"
-      [strokeColour]="strokeDebug"
-      [fillColour]="fillDebug"
-      title="Settings"
+      [defaultColour]="defaultColour"
+      [selectedColour]="selectedColour"
+      title="Debug"
+      [text]="'Debug'"
+      [routeName]="'/debug'"
       routerLink="/debug"
     ></app-debug-icon>
   </nav>

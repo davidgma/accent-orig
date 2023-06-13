@@ -1,14 +1,11 @@
 import { Component, Input } from '@angular/core';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-debug-icon',
   templateUrl: './debug-icon.component.html',
   styleUrls: ['./debug-icon.component.scss']
 })
-export class DebugIconComponent {
-  @Input() iconSize = 10;
-  @Input() strokeColour = "white";
-  @Input() fillColour = "grey";
-  @Input() selected = false;
-  @Input() text: string | null = "Debug";
+export class DebugIconComponent extends IconComponent {
+
 }

@@ -5,17 +5,19 @@
   <section id="record" (click)="record()">
     <app-mic
       [iconSize]="30"
-      [strokeColour]="'green'"
-      [fillColour]="'green'"
+      [defaultColour]="defaultColour"
+      [selectedColour]="selectedColour"
       title="Record"
+      [text]="'Record'"
     ></app-mic>
   </section>
   <section id="play" (click)="play()">
     <app-play
       [iconSize]="30"
-      [strokeColour]="'grey'"
-      [fillColour]="'gray'"
+      [defaultColour]="defaultColour"
+      [selectedColour]="selectedColour"
       title="Playback"
+      [text]="'Playback'"
     ></app-play>
   </section>
   <audio controls class="audio-element hide"></audio>

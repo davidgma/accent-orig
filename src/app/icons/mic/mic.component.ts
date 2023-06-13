@@ -1,14 +1,10 @@
 import { Component, Input } from '@angular/core';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-mic',
   templateUrl: './mic.component.html',
   styleUrls: ['./mic.component.scss']
 })
-export class MicComponent {
-  @Input() iconSize = 10;
-  @Input() strokeColour = "white";
-  @Input() fillColour = "grey";
-  @Input() selected = false;
-  @Input() text: string | null = "Record";
+export class MicComponent extends IconComponent {
 }
