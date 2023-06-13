@@ -7,13 +7,27 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { MainComponent } from './pages/main/main.component';
 import { MicComponent } from './icons/mic/mic.component';
 import { PlayComponent } from './icons/play/play.component';
+import { InfoIconComponent } from './icons/info-icon/info-icon.component';
+import { SettingsIconComponent } from './icons/settings-icon/settings-icon.component';
+import { HomeIconComponent } from './icons/home-icon/home-icon.component';
+import { NavComponent } from './nav/nav.component';
+import { InfoComponent } from './pages/info/info.component';
+import { SettingsComponent } from './pages/settings/settings.component';
+import { DebugIconComponent } from './icons/debug-icon/debug-icon.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MainComponent,
     MicComponent,
-    PlayComponent
+    PlayComponent,
+    InfoIconComponent,
+    SettingsIconComponent,
+    HomeIconComponent,
+    NavComponent,
+    InfoComponent,
+    SettingsComponent,
+    DebugIconComponent
   ],
   imports: [
     BrowserModule,

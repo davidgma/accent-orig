@@ -1,14 +1,28 @@
-section {
-  height: 48%;
-  border: 2px solid green;
+main {
+  height: 90vh;
   display: flex;
-  justify-content: center;
-  align-items: center;
-}
+  flex-direction: column;
 
-header {
-  height: 4%;
-  font-size: 2vh;
-  display: flex;
-  align-items: center;
+
+
+  & header {
+    // height: 4%;
+    font-size: 2vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  & section {
+    flex-grow: 1;
+    border: 2px solid green;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  & audio {
+    visibility: hidden;
+    height: 0;
+  }
 }

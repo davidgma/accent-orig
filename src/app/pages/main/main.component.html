@@ -1,20 +1,22 @@
-<header>
-  <p>Recording: {{ rs.state }}, Playback: {{ ps.state}}</p>
-</header>
-<section id="record" (click)="record()">
-  <app-mic
-    [iconSize]="30"
-    [strokeColour]="'green'"
-    [fillColour]="'green'"
-    title="Record"
-  ></app-mic>
-</section>
-<section id="play" (click)="play()">
-  <app-play
-    [iconSize]="30"
-    [strokeColour]="'grey'"
-    [fillColour]="'gray'"
-    title="Playback"
-  ></app-play>
-</section>
-<audio controls class="audio-element hide"></audio>
+<main>
+  <header>
+    <p>Recording: {{ rs.state }}, Playback: {{ ps.state }}</p>
+  </header>
+  <section id="record" (click)="record()">
+    <app-mic
+      [iconSize]="30"
+      [strokeColour]="'green'"
+      [fillColour]="'green'"
+      title="Record"
+    ></app-mic>
+  </section>
+  <section id="play" (click)="play()">
+    <app-play
+      [iconSize]="30"
+      [strokeColour]="'grey'"
+      [fillColour]="'gray'"
+      title="Playback"
+    ></app-play>
+  </section>
+  <audio controls class="audio-element hide"></audio>
+</main>

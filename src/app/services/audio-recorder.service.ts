@@ -1,3 +1,5 @@
+// no longer used
+
 import { EventEmitter, Injectable } from '@angular/core';
 
 @Injectable({
