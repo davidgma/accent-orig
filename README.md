@@ -10,3 +10,8 @@ It records you speaking and then you can play back what you just said.
 Based on https://ralzohairi.medium.com/audio-recording-in-javascript-96eed45b75ee
 
 https://codepen.io/ralzohairi/pen/zYrKLWy
+
+also maybe helpful
+https://developer.chrome.com/blog/live-web-audio-input-enabled/
+
+https://stackoverflow.com/questions/67682297/i-developed-the-recording-using-the-javascript-web-audio-api-but-the-sound-qual
