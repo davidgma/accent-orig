@@ -7,7 +7,6 @@ import { LoggerService } from './logger.service';
 export class PlaybackService {
   private moduleName = 'PlaybackService';
 
-
   stateChange = new EventEmitter<PlayingState>();
   state = PlayingState.UnInitialized;
   private audio: HTMLAudioElement | null = null;
