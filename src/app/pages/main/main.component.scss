@@ -17,8 +17,8 @@ main {
     flex-grow: 1;
     border: 2px solid green;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: left;
+    align-items: top;
   }
 
   & audio {
