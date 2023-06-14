@@ -2,7 +2,11 @@
   <header>
     <p>Recording: {{ rs.state }}, Playback: {{ ps.state }}</p>
   </header>
-  <section id="record" (click)="record()">
+  <section
+    id="record"
+    [style.--background-color]="backgroundColor"
+    (click)="record()"
+  >
     <app-mic
       [iconSize]="8"
       [defaultColour]="defaultColour"
@@ -11,7 +15,11 @@
       [text]="'Record'"
     ></app-mic>
   </section>
-  <section id="play" (click)="play()">
+  <section
+    id="play"
+    [style.--background-color]="backgroundColor"
+    (click)="play()"
+  >
     <app-play
       [iconSize]="8"
       [defaultColour]="defaultColour"

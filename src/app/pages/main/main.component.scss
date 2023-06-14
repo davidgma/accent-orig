@@ -3,8 +3,6 @@ main {
   display: flex;
   flex-direction: column;
 
-
-
   & header {
     // height: 4%;
     font-size: 2vh;
@@ -19,6 +17,7 @@ main {
     display: flex;
     justify-content: left;
     align-items: top;
+    background-color: var(--background-color);
   }
 
   & audio {

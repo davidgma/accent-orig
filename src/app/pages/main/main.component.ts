@@ -15,6 +15,9 @@ export class MainComponent {
   defaultColour = "black";
   selectedColour = "red";
 
+  // Colour for main background
+  backgroundColor = "ivory";
+
   // To stop a function running more than once at the same time
   // private isGainingFocus = false;
   // private isLosingFocus = false;
@@ -61,6 +64,7 @@ export class MainComponent {
     this.ps.setupAudio();
 
     this.logStates();
+    this.monitorStates();
 
   }
 
@@ -84,20 +88,11 @@ export class MainComponent {
   async gainedFocus() {
     let functionName = 'gainedFocus';
 
-
-
-    // if (this.isGainingFocus === true) {
-    //   return;
-    // }
-    // this.isGainingFocus = true;
-
     this.ls.log('Calling start...', this.moduleName, functionName, 1);
     await this.rs.start();
     this.ls.log('Calling pause...', this.moduleName, functionName, 1);
     await this.rs.pause();
 
-    // this.isGainingFocus = false;
-    // this.focused.emit();
   }
 
   private logStates() {
@@ -189,6 +184,33 @@ export class MainComponent {
     decorated.locked = false;
 
     return decorated;
+  }
+
+  private monitorStates() {
+    this.rs.stateChange.subscribe((state: RecordingState) => {
+      switch (state) {
+        case RecordingState.Paused:
+          this.backgroundColor = "ivory";
+          break;
+        case RecordingState.Recording:
+          this.backgroundColor = "firebrick";
+          break;
+        case RecordingState.Stopped:
+          this.backgroundColor = "ivory";
+          break;
+      }
+    });
+
+    this.ps.stateChange.subscribe((state: PlayingState) => {
+      switch (state) {
+        case PlayingState.Playing:
+          this.backgroundColor = "mediumseagreen";
+          break;
+        case PlayingState.Ready:
+          this.backgroundColor = "ivory";
+      }
+    });
+
   }
 
 }
