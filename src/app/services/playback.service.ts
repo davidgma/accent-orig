@@ -33,7 +33,7 @@ export class PlaybackService {
     this.stateChange.emit(this.state);
   }
 
-  async play(blob: Blob): Promise<void> {
+  async play(blob: Blob, currentTime = 0): Promise<void> {
     let functionName = 'play';
     this.ls.log('Called. blob size: ' + blob.size, this.moduleName, functionName, 1);
 
@@ -80,7 +80,8 @@ export class PlaybackService {
               this.audio.load();
               //play the audio after successfully setting new src and type that corresponds to the recorded audio
               this.ls.log('Playing blob audio...', this.moduleName, functionName);
-              // audioElement.currentTime = 3;
+              this.ls.log('currentTime: ' + currentTime, this.moduleName, functionName, 1);
+              this.audio.currentTime = currentTime;
               this.audio.play().then(() => {
                 this.audio?.addEventListener("ended", () => {
                   // this.ls.log("Finished playing audio");

@@ -21,9 +21,14 @@ export class RecordingService {
   private isInitialized = false;
   private initialized = new EventEmitter<void>();
 
+  private startTime = new Date();
+  private latestRecordingDuration = 0; // milliseconds
+  public currentTime = 0; // seconds, time to start playing
+
   constructor(private ls: LoggerService) {
     this.stateChange.emit(RecordingState.UnInitialized);
     this.initialize();
+    this.monitorTime();
   }
 
   // Initialize the MediaRecorder
@@ -139,8 +144,10 @@ export class RecordingService {
           this.ls.log("Error in RecordingService start: Failed to record.", this.moduleName, functionName);
         }
         else {
-          this.state = RecordingState.Recording;
-          this.stateChange.emit(this.state);
+          if (this.state !== RecordingState.Recording) {
+            this.state = RecordingState.Recording;
+            this.stateChange.emit(this.state);
+          }
         }
         this.ls.log('Final: ' + this.toString(), this.moduleName, functionName, 1);
         resolve();
@@ -184,8 +191,10 @@ export class RecordingService {
           this.ls.log("Error: Failed to stop.", this.moduleName, functionName);
         }
         else {
-          this.state = RecordingState.Stopped;
-          this.stateChange.emit(this.state);
+          if (this.state !== RecordingState.Stopped) {
+            this.state = RecordingState.Stopped;
+            this.stateChange.emit(this.state);
+          }
         }
         this.ls.log('Final: ' + this.toString(), this.moduleName, functionName, 1);
         resolve();
@@ -224,8 +233,11 @@ export class RecordingService {
         this.ls.log('Error: Failed to pause.', this.moduleName, functionName);
       }
       else {
-        this.state = RecordingState.Paused;
-        this.stateChange.emit(this.state);
+        if (this.state !== RecordingState.Paused) {
+          this.state = RecordingState.Paused;
+          this.stateChange.emit(this.state);
+        }
+
       }
       this.ls.log('Final: ' + this.toString(), this.moduleName, functionName, 1);
     }
@@ -351,6 +363,26 @@ export class RecordingService {
     return status;
   }
 
+  private monitorTime() {
+    let functionName = 'monitorTime';
+
+    this.stateChange.subscribe((state: RecordingState) => {
+      if (state === RecordingState.Recording) {
+        // move the currentTime forward
+        this.currentTime += this.latestRecordingDuration / 1000;
+        // set the start time to measure the latest recording
+        this.startTime = new Date();
+      }
+
+      if (state === RecordingState.Paused) {
+        let ended = new Date();
+        this.latestRecordingDuration =
+          (ended.valueOf() - this.startTime.valueOf());
+        this.ls.log('latestRecordingDuration: ' + this.latestRecordingDuration, this.moduleName, functionName, 1);
+      }
+    });
+  }
+
   getMimeType(): string {
 
     let ret = "Undefined: No recording data yet."
@@ -360,6 +392,8 @@ export class RecordingService {
     // console.log("in getMimeType, returning " + ret);
     return ret;
   }
+
+
 
 }
 

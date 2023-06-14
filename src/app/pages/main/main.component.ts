@@ -121,7 +121,7 @@ export class MainComponent {
       // this.rs.stop();
       let blob = await this.rs.getData();
 
-      this.ps.play(blob);
+      this.ps.play(blob, this.rs.currentTime);
       // this.ls.log('Calling restart 1', this.moduleName, functionName, 1);
       // this.rs.restart();
     }
@@ -131,7 +131,7 @@ export class MainComponent {
     else {
       // this.ls.log('Calling restart 2', this.moduleName, functionName, 1);
       // this.rs.restart();
-      await this.ps.play(this.audioAsBlob);
+      await this.ps.play(this.audioAsBlob, this.rs.currentTime);
       this.ls.log('Finished playing audio', this.moduleName, functionName);
     }
 
@@ -168,17 +168,6 @@ export class MainComponent {
     }
 
   }
-
-
-  /** Stores the actual start time when an audio recording begins to take place to ensure elapsed time start time is accurate*/
-  private audioRecordStartTime = new Date();
-
-  /** Stores the maximum recording time in hours to stop recording once maximum recording hour has been reached */
-  private maximumRecordingTimeInHours = 1;
-
-  /** Stores the reference of the setInterval function that controls the timer in audio recording*/
-  private elapsedTimeTimer: any = null;
-
 
   // For stopping async methods from running more than once at the same time.
   private lock(decoratee: Function) {
