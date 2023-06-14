@@ -110,30 +110,34 @@ export class MainComponent {
     let functionName = 'play';
     this.ls.log('play', this.moduleName, functionName);
 
-    // Cancel any audio currently playing
-    if (this.ps.state === PlayingState.Playing) {
-      this.ps.cancel();
-    }
+    return new Promise<void>(async (resolve, reject) => {
 
-    // If it's currently recording, stop the
-    // recording and wait for the blob to be ready
-    if (this.rs.state === RecordingState.Recording) {
-      // this.rs.stop();
-      let blob = await this.rs.getData();
+      // Cancel any audio currently playing
+      if (this.ps.state === PlayingState.Playing) {
+        this.ps.cancel();
+        resolve();
+        return;
+      }
 
-      this.ps.play(blob, this.rs.currentTime);
-      // this.ls.log('Calling restart 1', this.moduleName, functionName, 1);
-      // this.rs.restart();
-    }
-    else if (this.audioAsBlob.size === 0) {
-      return;
-    }
-    else {
-      // this.ls.log('Calling restart 2', this.moduleName, functionName, 1);
-      // this.rs.restart();
-      await this.ps.play(this.audioAsBlob, this.rs.currentTime);
-      this.ls.log('Finished playing audio', this.moduleName, functionName);
-    }
+      // If it's currently recording, stop the
+      // recording and wait for the blob to be ready
+      if (this.rs.state === RecordingState.Recording) {
+        let blob = await this.rs.getData();
+
+        this.ps.play(blob, this.rs.currentTime);
+      }
+      else if (this.audioAsBlob.size === 0) {
+        resolve();
+        return;
+      }
+      else {
+        await this.ps.play(this.audioAsBlob, this.rs.currentTime);
+        this.ls.log('Finished playing audio', this.moduleName, functionName);
+        resolve();
+      }
+      resolve();
+    });
+
 
   }
 
@@ -141,31 +145,33 @@ export class MainComponent {
     let functionName = 'record';
     this.ls.log('record', this.moduleName, functionName);
 
-    // Check that the recorder is recording
-    if (this.rs.state !== RecordingState.Recording) {
-      await this.rs.start();
-    }
+    return new Promise<void>(async (resolve, reject) => {
+      // Check that the recorder is recording
+      if (this.rs.state !== RecordingState.Recording) {
+        await this.rs.start();
+      }
 
-    // Stop any current playing audio
-    if (this.ps.state === PlayingState.Playing) {
-      this.ps.cancel();
-    }
+      // Stop any current playing audio
+      if (this.ps.state === PlayingState.Playing) {
+        this.ps.cancel();
+      }
 
-    switch (this.rs.state) {
-      case RecordingState.Paused:
-        this.rs.start();
-        break;
-      case RecordingState.Recording:
-        this.audioAsBlob = await this.rs.getData();
-        this.ls.log('Blob received size ' + this.audioAsBlob.size, this.moduleName, functionName, 1);
-        this.rs.pause();
-        break;
-      case RecordingState.Stopped:
-        this.rs.start();
-        break;
-      case RecordingState.UnInitialized:
-        this.rs.start();
-    }
+      switch (this.rs.state) {
+        case RecordingState.Paused:
+          this.rs.start();
+          break;
+        case RecordingState.Recording:
+          this.audioAsBlob = await this.rs.getData();
+          this.ls.log('Blob received size ' + this.audioAsBlob.size, this.moduleName, functionName, 1);
+          this.rs.pause();
+          break;
+        case RecordingState.Stopped:
+          this.rs.start();
+          break;
+        case RecordingState.UnInitialized:
+          this.rs.start();
+      }
+    });
 
   }
 

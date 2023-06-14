@@ -121,7 +121,8 @@ export class PlaybackService {
     let functionName = 'cancel';
 
     this.audio?.pause();
-
+    this.state = PlayingState.Ready;
+    this.stateChange.emit(this.state);
   }
 
 
