@@ -16,8 +16,8 @@ export class MainComponent {
   selectedColour = "red";
 
   // To stop a function running more than once at the same time
-  private isGainingFocus = false;
-  private isLosingFocus = false;
+  // private isGainingFocus = false;
+  // private isLosingFocus = false;
 
   private audioAsBlob = new Blob();
 
@@ -31,28 +31,28 @@ export class MainComponent {
 
     window.addEventListener("focus", () => {
       this.ls.log('Window gained focus', this.moduleName, functionName);
-      this.gainedFocus();
+      this.lockedGainedFocus();
     });
     window.addEventListener("pageshow", () => {
       this.ls.log('Window pageshow', this.moduleName, functionName);
-      this.gainedFocus();
+      this.lockedGainedFocus();
     });
     window.addEventListener("blur", () => {
       this.ls.log('Window lost focus', this.moduleName, functionName);
-      this.lostFocus();
+      this.lockedLostFocus();
     });
     window.addEventListener("pagehide", () => {
       this.ls.log('Window pagehide', this.moduleName, functionName);
-      this.lostFocus();
+      this.lockedLostFocus();
     });
     document.onvisibilitychange = () => {
       if (document.visibilityState === "hidden") {
         this.ls.log('Document hidden', this.moduleName, functionName);
-        this.lostFocus();
+        this.lockedLostFocus();
       }
       if (document.visibilityState === "visible") {
         this.ls.log('Document visible', this.moduleName, functionName);
-        this.gainedFocus();
+        this.lockedGainedFocus();
       }
     }
 
@@ -64,35 +64,39 @@ export class MainComponent {
 
   }
 
+  private lockedLostFocus = this.lock(this.lostFocus);
   async lostFocus() {
     let functionName = 'lostFocus';
     this.ls.log('Called. ', this.moduleName, functionName, 1);
 
-    if (this.isLosingFocus === true) {
-      return;
-    }
-    this.isLosingFocus = true;
+    // if (this.isLosingFocus === true) {
+    //   return;
+    // }
+    // this.isLosingFocus = true;
     if (this.rs.state !== RecordingState.Stopped) {
       await this.rs.stop();
     }
-    this.isLosingFocus = false;
+    // this.isLosingFocus = false;
     this.ls.log('Final. ', this.moduleName, functionName, 1);
   }
 
+  private lockedGainedFocus = this.lock(this.gainedFocus);
   async gainedFocus() {
     let functionName = 'gainedFocus';
 
-    if (this.isGainingFocus === true) {
-      return;
-    }
-    this.isGainingFocus = true;
+
+
+    // if (this.isGainingFocus === true) {
+    //   return;
+    // }
+    // this.isGainingFocus = true;
 
     this.ls.log('Calling start...', this.moduleName, functionName, 1);
     await this.rs.start();
     this.ls.log('Calling pause...', this.moduleName, functionName, 1);
-    this.rs.pause();
+    await this.rs.pause();
 
-    this.isGainingFocus = false;
+    // this.isGainingFocus = false;
     // this.focused.emit();
   }
 
@@ -175,6 +179,22 @@ export class MainComponent {
   /** Stores the reference of the setInterval function that controls the timer in audio recording*/
   private elapsedTimeTimer: any = null;
 
+
+  // For stopping async methods from running more than once at the same time.
+  private lock(decoratee: Function) {
+    const decorated = async (...args: any[]) => {
+      if (!decorated.locked) {
+        decorated.locked = true;
+        await decoratee.call(this, ...args);
+        decorated.locked = false;
+      }
+    };
+
+    // Defines the property locked
+    decorated.locked = false;
+
+    return decorated;
+  }
 
 }
 
