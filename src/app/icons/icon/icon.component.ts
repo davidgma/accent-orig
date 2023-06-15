@@ -27,7 +27,6 @@ export class IconComponent implements OnInit {
 
     // Listen for routing changes
     this.router.events.subscribe((event) => {
-
       if (event.type === EventType.NavigationStart) {
         if (this.router.url === this.routeName) {
           this.fillColour = this.defaultColour;
@@ -35,7 +34,7 @@ export class IconComponent implements OnInit {
       }
 
       if (event.type === EventType.NavigationEnd) {
-        if (event.url === this.routeName) {
+        if (event.urlAfterRedirects === this.routeName) {
           this.fillColour = this.selectedColour;
         }
       }

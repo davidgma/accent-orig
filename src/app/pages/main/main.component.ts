@@ -215,5 +215,8 @@ export class MainComponent {
 
 }
 
-
+//(drag)="play()"
+// (dblclick) = "play()"
+// (drag) = "record()"
+//   (dblclick) = "record()"
 
