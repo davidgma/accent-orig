@@ -29,7 +29,8 @@
               "src/favicon.svg",
               "src/assets",
               "src/manifest.webmanifest",
-              "src/CNAME"
+              "src/CNAME",
+              "src/manifest.webmanifest"
             ],
             "styles": [
               "src/styles.scss"
@@ -95,6 +96,7 @@
             "assets": [
               "src/favicon.svg",
               "src/assets",
+              "src/manifest.webmanifest",
               "src/manifest.webmanifest"
             ],
             "styles": [
