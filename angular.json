@@ -27,6 +27,7 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.svg",
+              "src/favicon2.svg",
               "src/assets",
               "src/manifest.webmanifest",
               "src/CNAME",
