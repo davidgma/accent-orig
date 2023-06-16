@@ -68,15 +68,11 @@ export class MainComponent {
 
   }
 
-  private lockedLostFocus = this.lock(this.lostFocus);
+  private lockedLostFocus = this.ls.lock(this.lostFocus, this);
   async lostFocus() {
     let functionName = 'lostFocus';
     this.ls.log('Called. ', this.moduleName, functionName, 1);
 
-    // if (this.isLosingFocus === true) {
-    //   return;
-    // }
-    // this.isLosingFocus = true;
     if (this.rs.state !== RecordingState.Stopped) {
       await this.rs.stop();
     }
@@ -84,7 +80,7 @@ export class MainComponent {
     this.ls.log('Final. ', this.moduleName, functionName, 1);
   }
 
-  private lockedGainedFocus = this.lock(this.gainedFocus);
+  private lockedGainedFocus = this.ls.lock(this.gainedFocus, this);
   async gainedFocus() {
     let functionName = 'gainedFocus';
 
@@ -101,7 +97,20 @@ export class MainComponent {
     this.ls.log("PlaybackService state: " + this.ps.state, this.moduleName, functionName);
   }
 
-  async play() {
+  togglePlay = this.ls.lock(this.togglePlayLocked, this);
+  private async togglePlayLocked() {
+    // Assume that any additional spurious calls
+    // e.g. from mousedown and click
+    // will happen within a short period of time
+    return new Promise<void>(async (resolve, reject) => {
+      this.play(); // don't await because we need to be able to cancel
+      setTimeout(() => {
+        resolve();
+      }, 500);
+    });
+  }
+
+  private async play() {
     let functionName = 'play';
     this.ls.log('play', this.moduleName, functionName);
 
@@ -136,7 +145,20 @@ export class MainComponent {
 
   }
 
-  async record() {
+  toggleRecord = this.ls.lock(this.toggleRecordLocked, this);
+  private async toggleRecordLocked() {
+    // Assume that any additional spurious calls
+    // e.g. from mousedown and click
+    // will happen within a short period of time
+    return new Promise<void>(async (resolve, reject) => {
+      this.record(); // don't await because we need to be able to cancel
+      setTimeout(() => {
+        resolve();
+      }, 500);
+    });
+  }
+
+  private async record() {
     let functionName = 'record';
     this.ls.log('record', this.moduleName, functionName);
 
@@ -170,22 +192,6 @@ export class MainComponent {
 
   }
 
-  // For stopping async methods from running more than once at the same time.
-  private lock(decoratee: Function) {
-    const decorated = async (...args: any[]) => {
-      if (!decorated.locked) {
-        decorated.locked = true;
-        await decoratee.call(this, ...args);
-        decorated.locked = false;
-      }
-    };
-
-    // Defines the property locked
-    decorated.locked = false;
-
-    return decorated;
-  }
-
   private monitorStates() {
     this.rs.stateChange.subscribe((state: RecordingState) => {
       switch (state) {
@@ -213,10 +219,9 @@ export class MainComponent {
 
   }
 
+
+
 }
 
-//(drag)="play()"
-// (dblclick) = "play()"
-// (drag) = "record()"
-//   (dblclick) = "record()"
+
 

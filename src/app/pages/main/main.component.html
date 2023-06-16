@@ -5,8 +5,10 @@
   <section
     id="record"
     [style.--background-color]="backgroundColor"
-    (click)="record()"
-    
+    (click)="toggleRecord()"
+    (mousedown)="toggleRecord()"
+    (drag)="toggleRecord()"
+    (dblclick)="toggleRecord()"
   >
     <app-mic
       [iconSize]="8"
@@ -19,8 +21,10 @@
   <section
     id="play"
     [style.--background-color]="backgroundColor"
-    (click)="play()"
-
+    (click)="togglePlay()"
+    (mousedown)="togglePlay()"
+    (drag)="togglePlay()"
+    (dblclick)="togglePlay()"
   >
     <app-play
       [iconSize]="8"

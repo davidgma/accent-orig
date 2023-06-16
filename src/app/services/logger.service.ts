@@ -24,4 +24,20 @@ export class LoggerService {
       this.logged.emit(log);
     }
   }
+
+  // For stopping async methods from running more than once at the same time.
+  lock(decoratee: Function, callerThis: any) {
+    const decorated = async (...args: any[]) => {
+      if (!decorated.locked) {
+        decorated.locked = true;
+        await decoratee.call(callerThis, ...args);
+        decorated.locked = false;
+      }
+    };
+
+    // Defines the property locked
+    decorated.locked = false;
+
+    return decorated;
+  }
 }

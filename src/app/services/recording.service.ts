@@ -17,7 +17,6 @@ export class RecordingService {
   private mimeType: string | undefined = undefined;
 
   // To stop a function running more than once at the same time
-  private isInitializing = false;
   private isInitialized = false;
   private initialized = new EventEmitter<void>();
 
@@ -27,21 +26,16 @@ export class RecordingService {
 
   constructor(private ls: LoggerService) {
     this.stateChange.emit(RecordingState.UnInitialized);
-    this.initialize();
+    this.lockedInitialize();
     this.monitorTime();
   }
 
   // Initialize the MediaRecorder
+  private lockedInitialize = this.ls.lock(this.initialize, this);
   private async initialize() {
     let functionName = 'initialize';
 
-    if (this.isInitializing) {
-      // Already running
-      return;
-    }
-    this.isInitializing = true;
-
-    let p = new Promise<void>((resolve, reject) => {
+    return new Promise<void>(async (resolve, reject) => {
       //Feature Detection
       if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
         //Feature is not supported in browser
@@ -51,7 +45,7 @@ export class RecordingService {
         return;
       }
       //Feature is supported in browser
-      navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(async (stream) => {
         this.stream = stream;
         this.recorder = new MediaRecorder(stream);
         RecordingService.recorderCount++;
@@ -63,23 +57,23 @@ export class RecordingService {
           return;
         }
         else {
-          this.setupListener();
+          await this.setupListener();
           this.state = RecordingState.Stopped;
           this.stateChange.emit(this.state);
         }
         this.ls.log('Final: ' + this.toString(), this.moduleName, functionName, 1);
-        this.isInitializing = false;
         this.isInitialized = true;
         this.initialized.emit();
         resolve();
       });
 
     });
-    return p;
 
   }
 
-  async setupListener() {
+  // This doesn't need a lock as it is only run from initialize, which
+  // is locked.
+  private async setupListener() {
     let functionName = 'setupListener';
 
     this.recorder?.addEventListener("dataavailable", (event) => {
@@ -105,24 +99,22 @@ export class RecordingService {
     });
   }
 
-  async start() {
+  start = this.ls.lock(this.startLocked, this);
+  private async startLocked() {
     let functionName = 'start';
     this.ls.log('Called ' + this.toString(), this.moduleName, functionName, 1);
 
-    let p = new Promise<void>((resolve, reject) => {
-      if (!this.isInitialized && !this.isInitializing) {
-        this.initialize();
-      }
+    return new Promise<void>(async (resolve, reject) => {
 
       if (!this.isInitialized) {
         // this.ls.log('not initialized', this.moduleName, functionName, 1);
-        let sub = this.initialized.subscribe(() => {
+        let sub = this.initialized.subscribe(async () => {
           sub.unsubscribe();
           // this.ls.log('initialized event returned', this.moduleName, functionName, 1);
-          this.start().then(() => {
-            resolve();
-          });
+          await this.startLocked();
+          resolve();
         });
+        await this.lockedInitialize();
       }
       else {
         // should be initialized by now
@@ -155,10 +147,10 @@ export class RecordingService {
 
     });
 
-    return p;
   }
 
-  async stop() {
+  stop = this.ls.lock(this.stopLocked, this);
+  private async stopLocked() {
     let functionName = 'stop';
     this.ls.log(this.toString(), this.moduleName, functionName);
 
@@ -166,7 +158,7 @@ export class RecordingService {
       if (!this.isInitialized) {
         let sub = this.initialized.subscribe(() => {
           sub.unsubscribe();
-          this.stop().then(() => {
+          this.stopLocked().then(() => {
             resolve();
           });
         });
@@ -204,63 +196,69 @@ export class RecordingService {
 
   }
 
-  async pause() {
+  pause = this.ls.lock(this.pauseLocked, this);
+  private async pauseLocked() {
     let functionName = 'pause';
 
-    if (!this.isInitialized) {
-      let sub = this.initialized.subscribe(() => {
-        sub.unsubscribe();
-        this.stop();
-      });
-    }
-    else {
-      // should be initialized by now
-      switch (this.state) {
-        case RecordingState.UnInitialized:
-          this.ls.log('Error: Should be initialized by here.', this.moduleName, functionName, 1);
-          break;
-        case RecordingState.Recording:
-          this.recorder?.pause();
-          break;
-        case RecordingState.Paused:
-          break;
-        case RecordingState.Stopped:
-          this.recorder?.pause();
-          break;
-      }
+    return new Promise<void>(async (resolve, reject) => {
 
-      if (this.recorder?.state !== "paused") {
-        this.ls.log('Error: Failed to pause.', this.moduleName, functionName);
+      if (!this.isInitialized) {
+        let sub = this.initialized.subscribe(async () => {
+          sub.unsubscribe();
+          await this.pauseLocked();
+          resolve();
+        });
+        this.lockedInitialize();
       }
       else {
-        if (this.state !== RecordingState.Paused) {
-          this.state = RecordingState.Paused;
-          this.stateChange.emit(this.state);
+        // should be initialized by now
+        switch (this.state) {
+          case RecordingState.UnInitialized:
+            this.ls.log('Error: Should be initialized by here.', this.moduleName, functionName, 1);
+            break;
+          case RecordingState.Recording:
+            this.recorder?.pause();
+            break;
+          case RecordingState.Paused:
+            break;
+          case RecordingState.Stopped:
+            this.recorder?.pause();
+            break;
         }
 
+        if (this.recorder?.state !== "paused") {
+          this.ls.log('Error: Failed to pause.', this.moduleName, functionName);
+        }
+        else {
+          if (this.state !== RecordingState.Paused) {
+            this.state = RecordingState.Paused;
+            this.stateChange.emit(this.state);
+          }
+
+        }
+        this.ls.log('Final: ' + this.toString(), this.moduleName, functionName, 1);
+        resolve();
       }
-      this.ls.log('Final: ' + this.toString(), this.moduleName, functionName, 1);
-    }
+    });
+
+
 
   }
 
-  async restart() {
+  restart = this.ls.lock(this.restartLocked, this);
+  private async restartLocked() {
     let functionName = 'restart';
     this.ls.log('Called. ' + this.toString(), this.moduleName, functionName, 1);
 
-    let p = new Promise<void>(async (resolve, reject) => {
-
-      if (!this.isInitialized && !this.isInitializing) {
-        this.initialize();
-      }
+    return new Promise<void>(async (resolve, reject) => {
 
       if (!this.isInitialized) {
-        let sub = this.initialized.subscribe(() => {
+        let sub = this.initialized.subscribe(async () => {
           sub.unsubscribe();
-          this.restart().then(() => {
-            resolve();
-          });
+          await this.restartLocked();
+          resolve();
         });
+        await this.lockedInitialize();
       }
       else {
         // should be initialized by now
@@ -293,11 +291,8 @@ export class RecordingService {
 
         this.ls.log('Final: ' + this.toString(), this.moduleName, functionName, 1);
         resolve();
-
-
       }
     });
-    return p;
 
   }
 
@@ -353,7 +348,6 @@ export class RecordingService {
   toString() {
     let status = "state: " + this.state
       + ", initialized: " + this.isInitialized
-      + ", isInitializing: " + this.isInitializing
       + ", recorder: " + (this.recorder === null ? "null" : "instance")
       + ", stream: " + (this.stream === null ? "null" : "instance")
       + ", stream: " + (this.stream?.active ? "active" : "inactive")
@@ -392,8 +386,6 @@ export class RecordingService {
     // console.log("in getMimeType, returning " + ret);
     return ret;
   }
-
-
 
 }
 

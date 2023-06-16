@@ -40,7 +40,7 @@ export class PlaybackService {
     this.state = PlayingState.Playing;
     this.stateChange.emit(this.state);
 
-    let p = new Promise<void>((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       this.ls.log('playBlob', this.moduleName, functionName);
 
       //read content of files (Blobs) asynchronously
@@ -98,7 +98,6 @@ export class PlaybackService {
       //read content and convert it to a URL (base64)
       reader.readAsDataURL(blob);
     });
-    return p;
 
   }
 
