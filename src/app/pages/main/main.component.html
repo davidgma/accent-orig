@@ -9,6 +9,8 @@
     (mousedown)="toggleRecord()"
     (drag)="toggleRecord()"
     (dblclick)="toggleRecord()"
+    (touchmove)="toggleRecord()"
+    (touchstart)="toggleRecord()"
   >
     <app-mic
       [iconSize]="8"
@@ -25,6 +27,8 @@
     (mousedown)="togglePlay()"
     (drag)="togglePlay()"
     (dblclick)="togglePlay()"
+    (touchmove)="togglePlay()"
+    (touchstart)="togglePlay()"
   >
     <app-play
       [iconSize]="8"

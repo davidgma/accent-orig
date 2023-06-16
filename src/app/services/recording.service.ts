@@ -363,16 +363,19 @@ export class RecordingService {
     this.stateChange.subscribe((state: RecordingState) => {
       if (state === RecordingState.Recording) {
         // move the currentTime forward
+        this.ls.log('RecordingState changed to Recording. Initial currentTime: ' + this.currentTime + ". Initial latestRecordingDuration: " + this.latestRecordingDuration + ".", this.moduleName, functionName, 1);
         this.currentTime += this.latestRecordingDuration / 1000;
+        this.ls.log('RecordingState changed to recording. Amended currentTime: ' + this.currentTime + ". Amended latestRecordingDuration: " + this.latestRecordingDuration + ".", this.moduleName, functionName, 1);
         // set the start time to measure the latest recording
         this.startTime = new Date();
       }
 
       if (state === RecordingState.Paused) {
+        this.ls.log('RecordingState changed to Paused. Initial latestRecordingDuration: ' + this.latestRecordingDuration + ".", this.moduleName, functionName, 1);
         let ended = new Date();
         this.latestRecordingDuration =
           (ended.valueOf() - this.startTime.valueOf());
-        this.ls.log('latestRecordingDuration: ' + this.latestRecordingDuration, this.moduleName, functionName, 1);
+        this.ls.log('RecordingState changed to Paused. Amended latestRecordingDuration: ' + this.latestRecordingDuration + ".", this.moduleName, functionName, 1);
       }
     });
   }
