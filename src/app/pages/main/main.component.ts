@@ -99,6 +99,9 @@ export class MainComponent {
 
   togglePlay = this.ls.lock(this.togglePlayLocked, this);
   private async togglePlayLocked() {
+    let functionName = 'togglePlayLocked';
+    this.ls.log('Called.', this.moduleName, functionName, 1);
+
     // Assume that any additional spurious calls
     // e.g. from mousedown and click
     // will happen within a short period of time
@@ -147,6 +150,9 @@ export class MainComponent {
 
   toggleRecord = this.ls.lock(this.toggleRecordLocked, this);
   private async toggleRecordLocked() {
+    let functionName = 'toggleRecordLocked';
+    this.ls.log('Called.', this.moduleName, functionName, 1);
+
     // Assume that any additional spurious calls
     // e.g. from mousedown and click
     // will happen within a short period of time
@@ -219,7 +225,58 @@ export class MainComponent {
 
   }
 
+  // For debugging screen touching
+  recordMousedown() {
+    let functionName = 'recordMousedown';
+    this.ls.log('Initial', this.moduleName, functionName, 1);
+    this.toggleRecord();
+  }
+  recordDrag() {
+    let functionName = 'recordDrag';
+    this.ls.log('Initial', this.moduleName, functionName, 1);
+    this.toggleRecord();
+  }
+  recordDblClick() {
+    let functionName = 'recordDblClick';
+    this.ls.log('Initial', this.moduleName, functionName, 1);
+    this.toggleRecord();
+  }
+  recordTouchmove() {
+    let functionName = 'recordTouchmove';
+    this.ls.log('Initial', this.moduleName, functionName, 1);
+    this.toggleRecord();
+  }
+  recordTouchstart() {
+    let functionName = 'recordTouchstart';
+    this.ls.log('Initial', this.moduleName, functionName, 1);
+    this.toggleRecord();
+  }
 
+  playMousedown() {
+    let functionName = 'playMousedown';
+    this.ls.log('Initial', this.moduleName, functionName, 1);
+    this.togglePlay();
+  }
+  playDrag() {
+    let functionName = 'playDrag';
+    this.ls.log('Initial', this.moduleName, functionName, 1);
+    this.togglePlay();
+  }
+  playDblClick() {
+    let functionName = 'playDblClick';
+    this.ls.log('Initial', this.moduleName, functionName, 1);
+    this.togglePlay();
+  }
+  playTouchmove() {
+    let functionName = 'playTouchmove';
+    this.ls.log('Initial', this.moduleName, functionName, 1);
+    this.togglePlay();
+  }
+  playTouchstart() {
+    let functionName = 'playTouchstart';
+    this.ls.log('Initial', this.moduleName, functionName, 1);
+    this.togglePlay();
+  }
 
 }
 

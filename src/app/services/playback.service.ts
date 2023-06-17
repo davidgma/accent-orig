@@ -84,10 +84,13 @@ export class PlaybackService {
               this.audio.currentTime = currentTime;
               this.audio.play().then(() => {
                 this.audio?.addEventListener("ended", () => {
-                  // this.ls.log("Finished playing audio");
+                  this.ls.log('Finished playing audio.', this.moduleName, functionName, 1);
                   this.state = PlayingState.Ready;
                   this.stateChange.emit(this.state);
                   resolve();
+                });
+                this.audio?.addEventListener("error", (event: Event) => {
+                  this.ls.log('Error playing audio: ' + event.type, this.moduleName, functionName, 1);
                 });
               });
             }
