@@ -45,11 +45,20 @@ export class RecordingService {
         return;
       }
       //Feature is supported in browser
+      const constraints: MediaTrackConstraints = {
+        autoGainControl: false,
+        channelCount: 1,
+        echoCancellation: false,
+        noiseSuppression: false,
 
-      let devices = await navigator.mediaDevices.enumerateDevices();
-      this.ls.log('devices: ' + JSON.stringify(devices), this.moduleName, functionName, 1);
-      navigator.mediaDevices.getUserMedia({ audio: true }).then(async (stream) => {
+      }
+      navigator.mediaDevices.getUserMedia({
+        audio: true,
+        // channelCount: 1,
+
+      }).then(async (stream) => {
         this.stream = stream;
+        
         this.recorder = new MediaRecorder(stream);
         this.monitorRecorder(this.recorder);
         RecordingService.recorderCount++;

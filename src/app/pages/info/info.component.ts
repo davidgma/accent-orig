@@ -13,6 +13,7 @@ import localeGb from '@angular/common/locales/en-GB';
 
 import { PlaybackService, PlayingState } from 'src/app/services/playback.service';
 import { RecordingService, RecordingState } from 'src/app/services/recording.service';
+import { LoggerService } from 'src/app/services/logger.service';
 
 
 @Component({
@@ -22,6 +23,7 @@ import { RecordingService, RecordingState } from 'src/app/services/recording.ser
   styleUrls: ['./info.component.scss']
 })
 export class InfoComponent implements OnInit {
+
 
   messages = new Array<string>();
 
@@ -39,6 +41,21 @@ export class InfoComponent implements OnInit {
 
     // Version number
     this.messages.push("Accent version 0.04");
+
+    this.messages.push('User agent:' + navigator.userAgent);
+    this.messages.push("window.webkitURL: " + window.webkitURL);
+
+    navigator.mediaDevices.enumerateDevices().then((devices) => {
+      this.messages.push('devices: ' + JSON.stringify(devices));
+
+    });
+
+
+    const supportedConstraints = navigator.mediaDevices.getSupportedConstraints();
+    for (const c of Object.keys(supportedConstraints)) {
+      this.messages.push("Supported constraint: " + c);
+    }
+    // this.messages.push(JSON.stringify(supportedConstraints));
 
 
     // See Angular internationalization documentation.
@@ -75,7 +92,7 @@ export class InfoComponent implements OnInit {
 
     if (this.rs.state !== RecordingState.UnInitialized) {
       this.messages.push("RecordingState is " + this.rs.state + ". Getting info...");
-      this.messages.push("MimeType: " + this.rs.getMimeType() );
+      this.messages.push("MimeType: " + this.rs.getMimeType());
 
     }
 
