@@ -5,11 +5,8 @@
   <section
     id="record"
     [style.--background-color]="backgroundColor"
-    (mousedown)="recordMousedown()"
-    (drag)="recordDrag()"
-    (dblclick)="recordDblClick()"
-    (touchmove)="recordTouchmove()"
-    (touchstart)="recordTouchstart()"
+    (click)="recordClick()"
+
   >
     <app-mic
       [iconSize]="8"
@@ -22,11 +19,8 @@
   <section
     id="play"
     [style.--background-color]="backgroundColor"
-    (mousedown)="playMousedown()"
-    (drag)="playDrag()"
-    (dblclick)="playDblClick()"
-    (touchmove)="playTouchmove()"
-    (touchstart)="playTouchstart()"
+    (click)="playClick()"
+
   >
     <app-play
       [iconSize]="8"
@@ -36,5 +30,5 @@
       [text]="'Playback'"
     ></app-play>
   </section>
-  <audio controls class="audio-element hide"></audio>
+  <audio controls class="audio-element"></audio>
 </main>

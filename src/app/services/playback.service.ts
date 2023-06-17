@@ -13,24 +13,35 @@ export class PlaybackService {
   private source: HTMLSourceElement | null = null;
 
   constructor(private ls: LoggerService) {
+
   }
 
   public setupAudio() {
     let functionName = 'setupAudio';
 
-    this.audio = <HTMLAudioElement>document.getElementsByClassName("audio-element")[0];
-    if (this.audio === null) {
-      this.ls.log('Error in startPlaying: audioElement is null',
-        this.moduleName, functionName);
-      return;
+    if (this.state !== PlayingState.UnInitialized) {
+      this.ls.log('Audio already set up - nothing more to initialize.', this.moduleName, functionName, 1);
     }
-    this.source = this.audio.getElementsByTagName("source")[0];
-    if (this.source == null) {
-      this.source = this.createSourceForAudioElement();
+    else {
+      this.audio = <HTMLAudioElement>document.getElementsByClassName("audio-element")[0];
+      if (this.audio === null) {
+        this.ls.log('Error in startPlaying: audioElement is null',
+          this.moduleName, functionName);
+        return;
+      }
+      this.source = this.audio.getElementsByTagName("source")[0];
+      if (this.source == null) {
+        this.source = this.createSourceForAudioElement();
+      }
+
+      // this.audio.autoplay = true;
+
+      this.state = PlayingState.Ready;
+      this.stateChange.emit(this.state);
+
+      this.monitorAudio(this.audio);
     }
 
-    this.state = PlayingState.Ready;
-    this.stateChange.emit(this.state);
   }
 
   async play(blob: Blob, currentTime = 0): Promise<void> {
@@ -40,14 +51,16 @@ export class PlaybackService {
     this.state = PlayingState.Playing;
     this.stateChange.emit(this.state);
 
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<void>(async (resolve, reject) => {
       this.ls.log('playBlob', this.moduleName, functionName);
 
       //read content of files (Blobs) asynchronously
       let reader = new FileReader();
 
       //once content has been read
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
+        this.ls.log('Reader loaded', this.moduleName, functionName, 1);
+
         //store the base64 URL that represents the URL of the recording audio
         if (e.target == null) {
           this.ls.log('From startPlaying: Error: e.target is null', this.moduleName, functionName);
@@ -82,17 +95,23 @@ export class PlaybackService {
               this.ls.log('Playing blob audio...', this.moduleName, functionName);
               this.ls.log('currentTime: ' + currentTime, this.moduleName, functionName, 1);
               this.audio.currentTime = currentTime;
-              this.audio.play().then(() => {
-                this.audio?.addEventListener("ended", () => {
-                  this.ls.log('Finished playing audio.', this.moduleName, functionName, 1);
-                  this.state = PlayingState.Ready;
-                  this.stateChange.emit(this.state);
-                  resolve();
-                });
-                this.audio?.addEventListener("error", (event: Event) => {
-                  this.ls.log('Error playing audio: ' + event.type, this.moduleName, functionName, 1);
-                });
-              });
+              // this.audio?.addEventListener("ended", () => {
+              //   this.ls.log('Finished playing audio.', this.moduleName, functionName, 1);
+              //   this.state = PlayingState.Ready;
+              //   this.stateChange.emit(this.state);
+              //   resolve();
+              // });
+              // this.audio?.addEventListener("error", (event: Event) => {
+              //   this.ls.log('Error playing audio: ' + event.type, this.moduleName, functionName, 1);
+              // });
+              // try {
+              //   await this.audio.play();
+              // }
+              // catch (error) {
+              //   this.ls.log('Error: ' + error, this.moduleName, functionName, 1);
+              // }
+              resolve();
+
             }
           }
         };
@@ -125,6 +144,56 @@ export class PlaybackService {
     this.audio?.pause();
     this.state = PlayingState.Ready;
     this.stateChange.emit(this.state);
+  }
+
+  private monitorAudio(audio: HTMLAudioElement) {
+    this.listen("abort", audio);
+    this.listen("canplay", audio);
+    this.listen("canplaythrough", audio);
+    this.listen("durationchange", audio);
+    this.listen("emptied", audio);
+    this.listen("encrypted", audio);
+    this.listen("ended", audio);
+    this.listen("error", audio);
+    this.listen("loadeddata", audio);
+    this.listen("loadedmetadata", audio);
+    this.listen("loadstart", audio);
+    this.listen("pause", audio);
+    this.listen("play", audio);
+    this.listen("playing", audio);
+    this.listen("progress", audio);
+    this.listen("ratechange", audio);
+    this.listen("seeked", audio);
+    this.listen("seeking", audio);
+    this.listen("stalled", audio);
+    this.listen("suspend", audio);
+    this.listen("timeupdate", audio);
+    this.listen("volumechange", audio);
+    this.listen("waiting", audio);
+  }
+
+  private listen(name: string, audio: HTMLAudioElement) {
+    let functionName = 'listen';
+
+    audio.addEventListener(name, async (event) => {
+      this.ls.log(name + ' event emitted: '
+        + JSON.stringify(event), this.moduleName, functionName, 1);
+      if (event.type === "canplaythrough") {
+        this.ls.log('Playing...', this.moduleName, functionName, 1);
+        try {
+          await audio.play();
+        }
+        catch (error) {
+          this.ls.log('Error: ' + error, this.moduleName, functionName, 1);
+        }
+      }
+
+      if (event.type === "ended") {
+        this.ls.log('Finished playing audio.', this.moduleName, functionName, 1);
+        this.state = PlayingState.Ready;
+        this.stateChange.emit(this.state);
+      }
+    });
   }
 
 

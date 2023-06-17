@@ -21,7 +21,7 @@ main {
   }
 
   & audio {
-    visibility: hidden;
-    height: 0;
+    visibility: visible;
+    height:40;
   }
 }

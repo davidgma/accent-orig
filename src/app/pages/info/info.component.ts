@@ -38,7 +38,7 @@ export class InfoComponent implements OnInit {
   ngOnInit(): void {
 
     // Version number
-    this.messages.push("Accent version 0.03");
+    this.messages.push("Accent version 0.04");
 
 
     // See Angular internationalization documentation.

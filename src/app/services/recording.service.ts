@@ -45,9 +45,13 @@ export class RecordingService {
         return;
       }
       //Feature is supported in browser
+
+      let devices = await navigator.mediaDevices.enumerateDevices();
+      this.ls.log('devices: ' + JSON.stringify(devices), this.moduleName, functionName, 1);
       navigator.mediaDevices.getUserMedia({ audio: true }).then(async (stream) => {
         this.stream = stream;
         this.recorder = new MediaRecorder(stream);
+        this.monitorRecorder(this.recorder);
         RecordingService.recorderCount++;
         this.ls.log('recorderCount: ' + RecordingService.recorderCount, this.moduleName, functionName, 1);
 
@@ -57,7 +61,7 @@ export class RecordingService {
           return;
         }
         else {
-          await this.setupListener();
+          await this.dataListener();
           this.state = RecordingState.Stopped;
           this.stateChange.emit(this.state);
         }
@@ -73,11 +77,12 @@ export class RecordingService {
 
   // This doesn't need a lock as it is only run from initialize, which
   // is locked.
-  private async setupListener() {
+  private async dataListener() {
     let functionName = 'setupListener';
 
     this.recorder?.addEventListener("dataavailable", (event) => {
       let blob: Blob = event.data;
+      this.ls.log('dataavailable event triggered.', this.moduleName, functionName, 1);
       this.ls.log("blob gathered size: " + blob.size, this.moduleName, functionName);
 
       if (blob.size > 0) {
@@ -299,7 +304,9 @@ export class RecordingService {
   async getData(): Promise<Blob> {
     let functionName = 'getData';
 
-    let p = new Promise<Blob>((resolve, reject) => {
+    this.ls.log('Called', this.moduleName, functionName, 1);
+
+    return new Promise<Blob>((resolve, reject) => {
 
       // It should be recording
       if (this.state !== RecordingState.Recording) {
@@ -309,15 +316,21 @@ export class RecordingService {
       }
 
       // Request data from recorder
-      this.recorder?.requestData();
       let sub = this.dataReady.subscribe((blob) => {
         this.ls.log('Blob received size ' + blob.size, this.moduleName, functionName, 1);
         sub.unsubscribe();
         resolve(blob);
       });
+      this.ls.log('this.recorder?.state: ' + this.recorder?.state, this.moduleName, functionName, 1);
+      // this.recorder?.pause();
+      this.ls.log('Number of audio tracks: '
+        + this.stream?.getAudioTracks().length, this.moduleName, functionName, 1);
+      this.ls.log('stream settings: ' + JSON.stringify(this.stream?.getAudioTracks()[0].getSettings()), this.moduleName, functionName, 1);
+
+      this.recorder?.requestData();
+      // this.recorder?.resume();
 
     });
-    return p;
 
   }
 
@@ -390,6 +403,25 @@ export class RecordingService {
     return ret;
   }
 
+  private monitorRecorder(recorder: MediaRecorder) {
+    this.recorderListen("dataavailable", recorder);
+    this.recorderListen("error", recorder);
+    this.recorderListen("pause", recorder);
+    this.recorderListen("resume", recorder);
+    this.recorderListen("start", recorder);
+    this.recorderListen("stop", recorder);
+  }
+
+  private recorderListen(name: string, recorder: MediaRecorder) {
+    let functionName = 'listen';
+
+    recorder.addEventListener(name, async (event) => {
+      this.ls.log(name + ' event emitted: '
+        + JSON.stringify(event), this.moduleName, functionName, 1);
+
+    });
+  }
+
 }
 
 export enum RecordingState {
@@ -397,5 +429,7 @@ export enum RecordingState {
   Stopped = "Stopped",
   Recording = "Recording",
   Paused = "Paused"
-
 }
+
+
+

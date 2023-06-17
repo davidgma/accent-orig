@@ -1,3 +1,10 @@
 section {
   padding: 0 1vw;
+  width: 95vw;
+  // inline-size: 90vw;
+}
+
+p {
+  // max-width: 95vw;
+  overflow-wrap: break-word;
 }

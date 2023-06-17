@@ -1,4 +1,5 @@
 import { Component, EventEmitter } from '@angular/core';
+import { EnvironmentMonitorService } from 'src/app/services/environment-monitor.service';
 import { LoggerService } from 'src/app/services/logger.service';
 import { PlaybackService, PlayingState } from 'src/app/services/playback.service';
 import { RecordingService, RecordingState } from 'src/app/services/recording.service';
@@ -24,48 +25,46 @@ export class MainComponent {
 
   private audioAsBlob = new Blob();
 
-  constructor(public rs: RecordingService, public ps: PlaybackService, private ls: LoggerService) { }
-
-  ngOnInit() {
-    let functionName = 'ngOnInit';
+  constructor(public rs: RecordingService,
+    public ps: PlaybackService,
+    private ls: LoggerService,
+    private em: EnvironmentMonitorService) {
 
     // Set debug mode
     this.ls.debug = 1;
 
-    window.addEventListener("focus", () => {
-      this.ls.log('Window gained focus', this.moduleName, functionName);
-      this.lockedGainedFocus();
-    });
-    window.addEventListener("pageshow", () => {
-      this.ls.log('Window pageshow', this.moduleName, functionName);
-      this.lockedGainedFocus();
-    });
-    window.addEventListener("blur", () => {
-      this.ls.log('Window lost focus', this.moduleName, functionName);
-      this.lockedLostFocus();
-    });
-    window.addEventListener("pagehide", () => {
-      this.ls.log('Window pagehide', this.moduleName, functionName);
-      this.lockedLostFocus();
-    });
-    document.onvisibilitychange = () => {
-      if (document.visibilityState === "hidden") {
-        this.ls.log('Document hidden', this.moduleName, functionName);
-        this.lockedLostFocus();
-      }
-      if (document.visibilityState === "visible") {
-        this.ls.log('Document visible', this.moduleName, functionName);
-        this.lockedGainedFocus();
-      }
+    let functionName = 'constructor';
+    this.ls.log('Called.', this.moduleName, functionName, 1);
+
+
+    // Start listening for events
+    this.monitorStates();
+    this.monitorEnvironment();
+
+    // iOS doesn't seem to call a gainedFocus
+    // at the start or after a refresh so
+    // it needs to be done manually
+    this.ls.log('document has focus: ' + document.hasFocus(), this.moduleName, functionName, 1);
+    if (document.hasFocus()) {
+      this.em.onFocus.emit();
     }
 
+  }
+
+  ngOnInit() {
     // Setup the audio part - this can only be done once
     // the template is active
     this.ps.setupAudio();
-
     this.logStates();
-    this.monitorStates();
+  }
 
+  monitorEnvironment() {
+    this.em.onFocus.subscribe(() => {
+      this.lockedGainedFocus();
+    });
+    this.em.onUnfocus.subscribe(() => {
+      this.lockedLostFocus();
+    });
   }
 
   private lockedLostFocus = this.ls.lock(this.lostFocus, this);
@@ -199,7 +198,10 @@ export class MainComponent {
   }
 
   private monitorStates() {
+    let functionName = 'monitorStates';
+
     this.rs.stateChange.subscribe((state: RecordingState) => {
+      this.ls.log('rs.stateChange to ' + state, this.moduleName, functionName, 1);
       switch (state) {
         case RecordingState.Paused:
           this.backgroundColor = "ivory";
@@ -214,6 +216,7 @@ export class MainComponent {
     });
 
     this.ps.stateChange.subscribe((state: PlayingState) => {
+      this.ls.log('ps.stateChange to ' + state, this.moduleName, functionName, 1);
       switch (state) {
         case PlayingState.Playing:
           this.backgroundColor = "mediumseagreen";
@@ -226,59 +229,83 @@ export class MainComponent {
   }
 
   // For debugging screen touching
-  recordMousedown() {
-    let functionName = 'recordMousedown';
-    this.ls.log('Initial', this.moduleName, functionName, 1);
+  recordClick() {
+    let functionName = 'recordClick';
+    this.ls.log('Called.', this.moduleName, functionName, 1);
     this.toggleRecord();
   }
-  recordDrag() {
-    let functionName = 'recordDrag';
-    this.ls.log('Initial', this.moduleName, functionName, 1);
-    this.toggleRecord();
-  }
-  recordDblClick() {
-    let functionName = 'recordDblClick';
-    this.ls.log('Initial', this.moduleName, functionName, 1);
-    this.toggleRecord();
-  }
-  recordTouchmove() {
-    let functionName = 'recordTouchmove';
-    this.ls.log('Initial', this.moduleName, functionName, 1);
-    this.toggleRecord();
-  }
-  recordTouchstart() {
-    let functionName = 'recordTouchstart';
-    this.ls.log('Initial', this.moduleName, functionName, 1);
-    this.toggleRecord();
-  }
+  // recordMousedown() {
+  //   let functionName = 'recordMousedown';
+  //   this.ls.log('Called.', this.moduleName, functionName, 1);
+  //   this.toggleRecord();
+  // }
+  // recordDrag() {
+  //   let functionName = 'recordDrag';
+  //   this.ls.log('Initial', this.moduleName, functionName, 1);
+  //   this.toggleRecord();
+  // }
+  // recordDblClick() {
+  //   let functionName = 'recordDblClick';
+  //   this.ls.log('Initial', this.moduleName, functionName, 1);
+  //   this.toggleRecord();
+  // }
+  // recordTouchmove() {
+  //   let functionName = 'recordTouchmove';
+  //   this.ls.log('Initial', this.moduleName, functionName, 1);
+  //   this.toggleRecord();
+  // }
+  // recordTouchstart() {
+  //   let functionName = 'recordTouchstart';
+  //   this.ls.log('Initial', this.moduleName, functionName, 1);
+  //   this.toggleRecord();
+  // }
 
-  playMousedown() {
-    let functionName = 'playMousedown';
-    this.ls.log('Initial', this.moduleName, functionName, 1);
+  playClick() {
+    let functionName = 'playClick';
+    this.ls.log('Called.', this.moduleName, functionName, 1);
     this.togglePlay();
   }
-  playDrag() {
-    let functionName = 'playDrag';
-    this.ls.log('Initial', this.moduleName, functionName, 1);
-    this.togglePlay();
-  }
-  playDblClick() {
-    let functionName = 'playDblClick';
-    this.ls.log('Initial', this.moduleName, functionName, 1);
-    this.togglePlay();
-  }
-  playTouchmove() {
-    let functionName = 'playTouchmove';
-    this.ls.log('Initial', this.moduleName, functionName, 1);
-    this.togglePlay();
-  }
-  playTouchstart() {
-    let functionName = 'playTouchstart';
-    this.ls.log('Initial', this.moduleName, functionName, 1);
-    this.togglePlay();
-  }
+  // playMousedown() {
+  //   let functionName = 'playMousedown';
+  //   this.ls.log('Called.', this.moduleName, functionName, 1);
+  //   this.togglePlay();
+  // }
+  // playDrag() {
+  //   let functionName = 'playDrag';
+  //   this.ls.log('Initial', this.moduleName, functionName, 1);
+  //   this.togglePlay();
+  // }
+  // playDblClick() {
+  //   let functionName = 'playDblClick';
+  //   this.ls.log('Initial', this.moduleName, functionName, 1);
+  //   this.togglePlay();
+  // }
+  // playTouchmove() {
+  //   let functionName = 'playTouchmove';
+  //   this.ls.log('Initial', this.moduleName, functionName, 1);
+  //   this.togglePlay();
+  // }
+  // playTouchstart() {
+  //   let functionName = 'playTouchstart';
+  //   this.ls.log('Initial', this.moduleName, functionName, 1);
+  //   this.togglePlay();
+  // }
 
 }
 
+/*
+ (drag)="recordDrag()"
+    (dblclick)="recordDblClick()"
+    (touchmove)="recordTouchmove()"
+    (touchstart)="recordTouchstart()"
+    (mousedown)="recordMousedown()"
+
+    (drag)="playDrag()"
+    (dblclick)="playDblClick()"
+    (touchmove)="playTouchmove()"
+    (touchstart)="playTouchstart()"
+    (mousedown)="playMousedown()"
+
+*/
 
 
