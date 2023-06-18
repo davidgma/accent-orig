@@ -21,3 +21,7 @@ This doesn't currently work in iOS/Safari including Chrome on Safari as they don
 There is an open source implementation that does work:
 https://github.com/vocaroo/simple-audio-recorder
 It uses an audiocontext and an MP3 encoder. 
+
+This site has very helpful information:
+https://web.dev/media-recording-audio/
+

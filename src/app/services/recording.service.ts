@@ -48,17 +48,17 @@ export class RecordingService {
       const constraints: MediaTrackConstraints = {
         autoGainControl: false,
         channelCount: 1,
-        echoCancellation: false,
+        echoCancellation: true,
         noiseSuppression: false,
+        sampleRate: 16000
 
       }
       navigator.mediaDevices.getUserMedia({
-        audio: true,
-        // channelCount: 1,
+        audio: constraints
 
       }).then(async (stream) => {
         this.stream = stream;
-        
+
         this.recorder = new MediaRecorder(stream);
         this.monitorRecorder(this.recorder);
         RecordingService.recorderCount++;
@@ -441,4 +441,10 @@ export enum RecordingState {
 }
 
 
+//
+//
+//
+//
+//
+//
 
