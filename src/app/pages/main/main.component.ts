@@ -234,62 +234,62 @@ export class MainComponent {
     this.ls.log('Called.', this.moduleName, functionName, 1);
     this.toggleRecord();
   }
-  // recordMousedown() {
-  //   let functionName = 'recordMousedown';
-  //   this.ls.log('Called.', this.moduleName, functionName, 1);
-  //   this.toggleRecord();
-  // }
-  // recordDrag() {
-  //   let functionName = 'recordDrag';
-  //   this.ls.log('Initial', this.moduleName, functionName, 1);
-  //   this.toggleRecord();
-  // }
-  // recordDblClick() {
-  //   let functionName = 'recordDblClick';
-  //   this.ls.log('Initial', this.moduleName, functionName, 1);
-  //   this.toggleRecord();
-  // }
-  // recordTouchmove() {
-  //   let functionName = 'recordTouchmove';
-  //   this.ls.log('Initial', this.moduleName, functionName, 1);
-  //   this.toggleRecord();
-  // }
-  // recordTouchstart() {
-  //   let functionName = 'recordTouchstart';
-  //   this.ls.log('Initial', this.moduleName, functionName, 1);
-  //   this.toggleRecord();
-  // }
+  recordMousedown() {
+    let functionName = 'recordMousedown';
+    this.ls.log('Called.', this.moduleName, functionName, 1);
+    // this.toggleRecord();
+  }
+  recordDrag() {
+    let functionName = 'recordDrag';
+    this.ls.log('Initial', this.moduleName, functionName, 1);
+    // this.toggleRecord();
+  }
+  recordDblClick() {
+    let functionName = 'recordDblClick';
+    this.ls.log('Initial', this.moduleName, functionName, 1);
+    // this.toggleRecord();
+  }
+  recordTouchmove() {
+    let functionName = 'recordTouchmove';
+    this.ls.log('Initial', this.moduleName, functionName, 1);
+    // this.toggleRecord();
+  }
+  recordTouchstart() {
+    let functionName = 'recordTouchstart';
+    this.ls.log('Initial', this.moduleName, functionName, 1);
+    // this.toggleRecord();
+  }
 
   playClick() {
     let functionName = 'playClick';
     this.ls.log('Called.', this.moduleName, functionName, 1);
     this.togglePlay();
   }
-  // playMousedown() {
-  //   let functionName = 'playMousedown';
-  //   this.ls.log('Called.', this.moduleName, functionName, 1);
-  //   this.togglePlay();
-  // }
-  // playDrag() {
-  //   let functionName = 'playDrag';
-  //   this.ls.log('Initial', this.moduleName, functionName, 1);
-  //   this.togglePlay();
-  // }
-  // playDblClick() {
-  //   let functionName = 'playDblClick';
-  //   this.ls.log('Initial', this.moduleName, functionName, 1);
-  //   this.togglePlay();
-  // }
-  // playTouchmove() {
-  //   let functionName = 'playTouchmove';
-  //   this.ls.log('Initial', this.moduleName, functionName, 1);
-  //   this.togglePlay();
-  // }
-  // playTouchstart() {
-  //   let functionName = 'playTouchstart';
-  //   this.ls.log('Initial', this.moduleName, functionName, 1);
-  //   this.togglePlay();
-  // }
+  playMousedown() {
+    let functionName = 'playMousedown';
+    this.ls.log('Called.', this.moduleName, functionName, 1);
+    // this.togglePlay();
+  }
+  playDrag() {
+    let functionName = 'playDrag';
+    this.ls.log('Initial', this.moduleName, functionName, 1);
+    // this.togglePlay();
+  }
+  playDblClick() {
+    let functionName = 'playDblClick';
+    this.ls.log('Initial', this.moduleName, functionName, 1);
+    // this.togglePlay();
+  }
+  playTouchmove() {
+    let functionName = 'playTouchmove';
+    this.ls.log('Initial', this.moduleName, functionName, 1);
+    // this.togglePlay();
+  }
+  playTouchstart() {
+    let functionName = 'playTouchstart';
+    this.ls.log('Initial', this.moduleName, functionName, 1);
+    // this.togglePlay();
+  }
 
 }
 

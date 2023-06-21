@@ -6,7 +6,11 @@
     id="record"
     [style.--background-color]="backgroundColor"
     (click)="recordClick()"
-
+    (drag)="recordDrag()"
+    (dblclick)="recordDblClick()"
+    (touchmove)="recordTouchmove()"
+    (touchstart)="recordTouchstart()"
+    (mousedown)="recordMousedown()"
   >
     <app-mic
       [iconSize]="8"
@@ -20,7 +24,11 @@
     id="play"
     [style.--background-color]="backgroundColor"
     (click)="playClick()"
-
+    (drag)="playDrag()"
+    (dblclick)="playDblClick()"
+    (touchmove)="playTouchmove()"
+    (touchstart)="playTouchstart()"
+    (mousedown)="playMousedown()"
   >
     <app-play
       [iconSize]="8"
