@@ -257,7 +257,7 @@ export class MainComponent {
   recordTouchstart() {
     let functionName = 'recordTouchstart';
     this.ls.log('Initial', this.moduleName, functionName, 1);
-    // this.toggleRecord();
+    this.toggleRecord();
   }
 
   playClick() {
@@ -288,7 +288,7 @@ export class MainComponent {
   playTouchstart() {
     let functionName = 'playTouchstart';
     this.ls.log('Initial', this.moduleName, functionName, 1);
-    // this.togglePlay();
+    this.togglePlay();
   }
 
 }
