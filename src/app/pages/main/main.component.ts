@@ -126,16 +126,19 @@ export class MainComponent {
       }
 
       // If it's currently recording, stop the
-      // recording and wait for the blob to be ready
+      // recording and wait for the blob to be ready,
+      // and give it a little extra time to finish
       if (this.rs.state === RecordingState.Recording) {
+
+        // Give it a little time to finish
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         let blob = await this.rs.getData();
         this.audioAsBlob = blob;
         this.rs.pause();
-        // await this.playAudioBlob();
         this.playAudioBlob();
       }
       else if (this.audioAsBlob.size !== 0) {
-        // await this.playAudioBlob();
         this.playAudioBlob();
       }
       resolve();
