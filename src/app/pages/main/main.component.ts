@@ -108,7 +108,7 @@ export class MainComponent {
       this.play(); // don't await because we need to be able to cancel
       setTimeout(() => {
         resolve();
-      }, 500);
+      }, 100);
     });
   }
 
@@ -162,7 +162,7 @@ export class MainComponent {
       this.record(); // don't await because we need to be able to cancel
       setTimeout(() => {
         resolve();
-      }, 200);
+      }, 100);
     });
   }
 

@@ -40,7 +40,7 @@ export class InfoComponent implements OnInit {
   ngOnInit(): void {
 
     // Version number
-    this.messages.push("Accent version 0.09");
+    this.messages.push("Accent version 0.10");
     this.messages.push("Recent change: new constraints");
 
     this.messages.push('User agent:' + navigator.userAgent);
