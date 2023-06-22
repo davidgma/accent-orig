@@ -4,6 +4,8 @@ import { EventEmitter, Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class LoggerService {
+  private moduleName = 'LoggerService';
+
 
   // This is set by MainComponent.ngOnInit
   debug = 0; // 0 - no debugging, 1 - general, 2 - specific
@@ -27,7 +29,11 @@ export class LoggerService {
 
   // For stopping async methods from running more than once at the same time.
   lock(decoratee: Function, callerThis: any) {
+    let functionName = 'lock';
+    this.log('Called by ' + decoratee.name, this.moduleName, functionName, 1);
+
     const decorated = async (...args: any[]) => {
+      this.log('In decorated function of lock. decorated.locked: ' + decorated.locked, this.moduleName, functionName, 1);
       if (!decorated.locked) {
         decorated.locked = true;
         await decoratee.call(callerThis, ...args);

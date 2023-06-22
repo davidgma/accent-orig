@@ -129,22 +129,25 @@ export class MainComponent {
       // recording and wait for the blob to be ready
       if (this.rs.state === RecordingState.Recording) {
         let blob = await this.rs.getData();
-
-        this.ps.play(blob, this.rs.currentTime);
+        this.audioAsBlob = blob;
+        this.rs.pause();
+        // await this.playAudioBlob();
+        this.playAudioBlob();
       }
-      else if (this.audioAsBlob.size === 0) {
-        resolve();
-        return;
-      }
-      else {
-        await this.ps.play(this.audioAsBlob, this.rs.currentTime);
-        this.ls.log('Finished playing audio', this.moduleName, functionName);
-        resolve();
+      else if (this.audioAsBlob.size !== 0) {
+        // await this.playAudioBlob();
+        this.playAudioBlob();
       }
       resolve();
     });
 
+  }
 
+  private async playAudioBlob() {
+    let functionName = 'playAudioBlob';
+
+    await this.ps.play(this.audioAsBlob, this.rs.currentTime);
+    this.ls.log('Finished playing audio blob', this.moduleName, functionName);
   }
 
   toggleRecord = this.ls.lock(this.toggleRecordLocked, this);
@@ -159,7 +162,7 @@ export class MainComponent {
       this.record(); // don't await because we need to be able to cancel
       setTimeout(() => {
         resolve();
-      }, 500);
+      }, 200);
     });
   }
 
@@ -169,9 +172,9 @@ export class MainComponent {
 
     return new Promise<void>(async (resolve, reject) => {
       // Check that the recorder is recording
-      if (this.rs.state !== RecordingState.Recording) {
-        await this.rs.start();
-      }
+      // if (this.rs.state !== RecordingState.Recording) {
+      //   await this.rs.start();
+      // }
 
       // Stop any current playing audio
       if (this.ps.state === PlayingState.Playing) {
@@ -183,8 +186,12 @@ export class MainComponent {
           this.rs.start();
           break;
         case RecordingState.Recording:
-          this.audioAsBlob = await this.rs.getData();
-          this.ls.log('Blob received size ' + this.audioAsBlob.size, this.moduleName, functionName, 1);
+
+          // this.audioAsBlob = await this.rs.getData();
+          // this.ls.log('Blob received size ' + this.audioAsBlob.size, this.moduleName, functionName, 1);
+          this.rs.getData().then((data) => {
+            this.audioAsBlob = data;
+          });
           this.rs.pause();
           break;
         case RecordingState.Stopped:
