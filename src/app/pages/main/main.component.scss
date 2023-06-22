@@ -15,8 +15,8 @@ main {
     flex-grow: 1;
     border: 2px solid green;
     display: flex;
-    justify-content: left;
-    align-items: top;
+    justify-content: var(--justify-content);
+    align-items: var(--align-items);
     background-color: var(--background-color);
   }
 

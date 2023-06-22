@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { LoggerService } from './services/logger.service';
 
 @Component({
   selector: 'app-root',
@@ -7,6 +8,9 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'accent';
-  constructor() { }
+  constructor(private ls: LoggerService) {
+    // Set debug mode
+    this.ls.debug = 1;
+   }
 
 }

@@ -5,6 +5,8 @@
   <section
     id="record"
     [style.--background-color]="backgroundColor"
+    [style.--justify-content]="justifyContent"
+    [style.--align-items]="alignItems"
     (click)="recordClick()"
     (drag)="recordDrag()"
     (dblclick)="recordDblClick()"
@@ -13,7 +15,7 @@
     (mousedown)="recordMousedown()"
   >
     <app-mic
-      [iconSize]="8"
+      [iconSize]="iconSize"
       [defaultColour]="defaultColour"
       [selectedColour]="selectedColour"
       title="Record"
@@ -23,6 +25,8 @@
   <section
     id="play"
     [style.--background-color]="backgroundColor"
+    [style.--justify-content]="justifyContent"
+    [style.--align-items]="alignItems"
     (click)="playClick()"
     (drag)="playDrag()"
     (dblclick)="playDblClick()"
@@ -31,7 +35,7 @@
     (mousedown)="playMousedown()"
   >
     <app-play
-      [iconSize]="8"
+      [iconSize]="iconSize"
       [defaultColour]="defaultColour"
       [selectedColour]="selectedColour"
       title="Playback"

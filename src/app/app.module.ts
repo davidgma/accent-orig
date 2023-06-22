@@ -16,6 +16,9 @@ import { SettingsComponent } from './pages/settings/settings.component';
 import { DebugIconComponent } from './icons/debug-icon/debug-icon.component';
 import { DebugComponent } from './pages/debug/debug.component';
 import { IconComponent } from './icons/icon/icon.component';
+import { BooleanSettingComponent } from './utils/boolean-setting/boolean-setting.component';
+import { NumericSettingComponent } from './utils/numeric-setting/numeric-setting.component';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -31,7 +34,9 @@ import { IconComponent } from './icons/icon/icon.component';
     SettingsComponent,
     DebugIconComponent,
     DebugComponent,
-    IconComponent
+    IconComponent,
+    BooleanSettingComponent,
+    NumericSettingComponent
   ],
   imports: [
     BrowserModule,
@@ -41,7 +46,8 @@ import { IconComponent } from './icons/icon/icon.component';
       // Register the ServiceWorker as soon as the application is stable
       // or after 30 seconds (whichever comes first).
       registrationStrategy: 'registerWhenStable:30000'
-    })
+    }),
+    FormsModule
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'en-GB' },

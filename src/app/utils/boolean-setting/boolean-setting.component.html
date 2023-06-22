@@ -1,0 +1,16 @@
+<main>
+  <section class="basic-info">
+    <p id="name">{{ setting.name }}</p>
+    <p id="description">{{ setting.description }}</p>
+  </section>
+  <section class="selector">
+    <label class="switch">
+      <input
+      type="checkbox"
+      [checked]="value"
+      (change)="change()"
+      />
+      <span class="slider round"></span>
+    </label>
+  </section>
+</main>

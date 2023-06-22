@@ -1,8 +1,9 @@
-import { Component, EventEmitter } from '@angular/core';
+import { Component } from '@angular/core';
 import { EnvironmentMonitorService } from 'src/app/services/environment-monitor.service';
 import { LoggerService } from 'src/app/services/logger.service';
 import { PlaybackService, PlayingState } from 'src/app/services/playback.service';
 import { RecordingService, RecordingState } from 'src/app/services/recording.service';
+import { SettingEvent, SettingsService, Setting } from 'src/app/services/settings.service';
 
 @Component({
   selector: 'app-main',
@@ -19,19 +20,17 @@ export class MainComponent {
   // Colour for main background
   backgroundColor = "ivory";
 
-  // To stop a function running more than once at the same time
-  // private isGainingFocus = false;
-  // private isLosingFocus = false;
+  iconSize = 8;
+  justifyContent = "center";
+  alignItems = "center";
 
   private audioAsBlob = new Blob();
 
   constructor(public rs: RecordingService,
     public ps: PlaybackService,
     private ls: LoggerService,
-    private em: EnvironmentMonitorService) {
-
-    // Set debug mode
-    this.ls.debug = 1;
+    private em: EnvironmentMonitorService,
+    private ss: SettingsService) {
 
     let functionName = 'constructor';
     this.ls.log('Called.', this.moduleName, functionName, 1);
@@ -40,6 +39,7 @@ export class MainComponent {
     // Start listening for events
     this.monitorStates();
     this.monitorEnvironment();
+    this.monitorSettings();
 
     // iOS doesn't seem to call a gainedFocus
     // at the start or after a refresh so
@@ -49,6 +49,8 @@ export class MainComponent {
       this.em.onFocus.emit();
     }
 
+    this.setIconPosition();
+
   }
 
   ngOnInit() {
@@ -56,6 +58,7 @@ export class MainComponent {
     // the template is active
     this.ps.setupAudio();
     this.logStates();
+
   }
 
   monitorEnvironment() {
@@ -65,6 +68,37 @@ export class MainComponent {
     this.em.onUnfocus.subscribe(() => {
       this.lockedLostFocus();
     });
+  }
+
+  monitorSettings() {
+    let functionName = 'monitorSettings';
+    this.ls.log('Called.', this.moduleName, functionName, 1);
+
+    let s = <Setting<boolean>>this.ss.settings.get("centralIcon");
+
+    s.onChange.subscribe((event) => {
+
+      this.ls.log('centralIcon 2 setting changed from '
+        + event.from + " to "
+        + event.to, this.moduleName, functionName, 1);
+
+      this.setIconPosition();
+
+    });
+  }
+
+  private setIconPosition() {
+    let s = <Setting<boolean>>this.ss.settings.get("centralIcon");
+    if (s.value === true) {
+      this.justifyContent = "center";
+      this.alignItems = "center"
+      this.iconSize = 20;
+    }
+    else {
+      this.justifyContent = "left";
+      this.alignItems = "top"
+      this.iconSize = 8;
+    }
   }
 
   private lockedLostFocus = this.ls.lock(this.lostFocus, this);
@@ -131,7 +165,7 @@ export class MainComponent {
       if (this.rs.state === RecordingState.Recording) {
 
         // Give it a little time to finish
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 200));
 
         let blob = await this.rs.getData();
         this.audioAsBlob = blob;
@@ -267,7 +301,7 @@ export class MainComponent {
   recordTouchstart() {
     let functionName = 'recordTouchstart';
     this.ls.log('Initial', this.moduleName, functionName, 1);
-    this.toggleRecord();
+    // this.toggleRecord();
   }
 
   playClick() {
@@ -298,7 +332,7 @@ export class MainComponent {
   playTouchstart() {
     let functionName = 'playTouchstart';
     this.ls.log('Initial', this.moduleName, functionName, 1);
-    this.togglePlay();
+    // this.togglePlay();
   }
 
 }

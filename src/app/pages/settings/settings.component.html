@@ -1,1 +1,12 @@
-<p>settings works!</p>
+<p
+*ngFor="let setting of ss.settings.values()">
+<app-boolean-setting
+*ngIf="isBoolean(setting.value)"
+[setting]="setting"
+></app-boolean-setting>
+<app-numeric-setting
+*ngIf="isNumeric(setting.value)"
+[setting]="setting"
+></app-numeric-setting>
+</p>
+
