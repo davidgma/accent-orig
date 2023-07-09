@@ -355,6 +355,11 @@ export class RecordingService {
 
     this.isInitialized = false;
     this.blobs = new Array<Blob>();
+    this.currentTime = 0;
+    this.ls.log('Current time should be 0: ' + this.currentTime, this.moduleName, functionName, 1);
+    this.startTime = new Date();
+    this.latestRecordingDuration = 0; // milliseconds
+    this.ls.log('latestRecordingDuration should be 0: ' + this.latestRecordingDuration, this.moduleName, functionName, 1);
   }
 
   /* Stop all the tracks on the active stream in order to stop the stream and remove
