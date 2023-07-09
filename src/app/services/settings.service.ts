@@ -38,6 +38,18 @@ export class SettingsService {
         + event.from + " to " + event.to, this.moduleName, functionName, 1);
       this.ls.debug = event.to;
     });
+
+    // Whether to show the record and play icons
+    // in portrait or landscape (true = portrait)
+    let portrait = new Setting<boolean>(
+      "Portrait",
+      "Show the record and play icons in portrait (otherwise they will be displayed as landscape",
+      true);
+    this.settings.set("portrait", portrait);
+    portrait.onChange.subscribe((event) => {
+      this.ls.log('portrait setting changed from '
+        + event.from + " to " + event.to, this.moduleName, functionName, 1);
+    });
   }
 }
 

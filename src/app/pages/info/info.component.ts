@@ -14,6 +14,7 @@ import localeGb from '@angular/common/locales/en-GB';
 import { PlaybackService, PlayingState } from 'src/app/services/playback.service';
 import { RecordingService, RecordingState } from 'src/app/services/recording.service';
 import { LoggerService } from 'src/app/services/logger.service';
+import { SettingsService } from 'src/app/services/settings.service';
 
 
 @Component({
@@ -33,18 +34,21 @@ export class InfoComponent implements OnInit {
     // @Inject(APP_BASE_HREF) private appBaseHref: string,
     private location: Location,
     private ps: PlaybackService,
-    private rs: RecordingService) {
+    private rs: RecordingService,
+  private ss: SettingsService) {
 
   }
 
   ngOnInit(): void {
 
     // Version number
-    this.messages.push("Accent version 0.12");
+    this.messages.push("Accent version 0.13");
     this.messages.push("Recent change: new constraints");
 
     this.messages.push('User agent:' + navigator.userAgent);
     this.messages.push("window.webkitURL: " + window.webkitURL);
+    this.messages.push("play/record layout direction: " + (this.ss.settings.get("portrait")?.value ? "portrait" : "landscape"));
+    this.messages.push("debugging level: " + (this.ss.settings.get("debugging")?.value));
 
     navigator.mediaDevices.enumerateDevices().then((devices) => {
       this.messages.push('devices: ' + JSON.stringify(devices));

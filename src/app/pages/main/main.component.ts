@@ -23,6 +23,7 @@ export class MainComponent {
   iconSize = 8;
   justifyContent = "center";
   alignItems = "center";
+  direction = "column";
 
   private audioAsBlob = new Blob();
 
@@ -50,6 +51,7 @@ export class MainComponent {
     }
 
     this.setIconPosition();
+    this.setDirection();
 
   }
 
@@ -85,6 +87,18 @@ export class MainComponent {
       this.setIconPosition();
 
     });
+
+    let p = <Setting<boolean>>this.ss.settings.get("portrait");
+
+    p.onChange.subscribe((event) => {
+
+      this.ls.log('portrait setting changed from '
+        + event.from + " to "
+        + event.to, this.moduleName, functionName, 1);
+
+      this.setDirection();
+
+    });
   }
 
   private setIconPosition() {
@@ -98,6 +112,16 @@ export class MainComponent {
       this.justifyContent = "left";
       this.alignItems = "top"
       this.iconSize = 8;
+    }
+  }
+
+  private setDirection() {
+    let p = <Setting<boolean>>this.ss.settings.get("portrait");
+    if (p.value === true) {
+      this.direction = "column";
+    }
+    else {
+      this.direction = "row";
     }
   }
 
@@ -121,6 +145,7 @@ export class MainComponent {
     await this.rs.start();
     this.ls.log('Calling pause...', this.moduleName, functionName, 1);
     await this.rs.pause();
+    this.ps.setupAudio();
 
   }
 

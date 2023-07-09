@@ -11,14 +11,21 @@ main {
     justify-content: center;
   }
 
-  & section {
+  & #record-play {
     flex-grow: 1;
-    border: 2px solid green;
     display: flex;
-    justify-content: var(--justify-content);
-    align-items: var(--align-items);
-    background-color: var(--background-color);
+    flex-direction: var(--direction);
+
+    & section {
+      flex-grow: 1;
+      border: 2px solid green;
+      display: flex;
+      justify-content: var(--justify-content);
+      align-items: var(--align-items);
+      background-color: var(--background-color);
+    }
   }
+
 
   & audio {
     // visibility: visible;
