@@ -55,7 +55,7 @@ export class SettingsService {
     let playDelay = new Setting<number>(
       "Play delay",
       "Time in seconds (including fractions) to skip forwards before starting playback.",
-      1, "OneDecimal");
+      0.3, "OneDecimal");
     this.settings.set("playDelay", playDelay);
     debugging.onChange.subscribe((event) => {
       this.ls.log('playDelay setting changed from '
