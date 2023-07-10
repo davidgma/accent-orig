@@ -1,0 +1,19 @@
+<main>
+  <section class="basic-info">
+    <p id="name">{{ setting.name }}</p>
+    <p id="description">{{ setting.description }}</p>
+  </section>
+  <!-- <section class="quantity">
+    <input type="number" [(ngModel)]="setting.value" min="0" max="2" />
+  </section> -->
+  <section class="number">
+    <p class="changer" (click)="increment()">+</p>
+    <p class="changer" (click)="decrement()">-</p>
+    <p id="value"
+     contenteditable="true"
+     [textContent]="setting.value"
+     (input)="valueChanged()"
+    >
+  </p>
+  </section>
+</main>

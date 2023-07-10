@@ -1,0 +1,54 @@
+main {
+  padding: 2vw;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
+  & .basic-info {
+    display: flex;
+    flex-direction: column;
+
+    & #name {
+      font-size: 3vh;
+      font-weight: 600;
+    }
+
+    & #description {
+      font-size: 2.5vh;
+      max-width: 80vw;
+    }
+  }
+}
+
+.number {
+  display: flex;
+  flex-direction: row;
+  font-size: 5vh;
+  padding: 1vw;
+
+  & .changer {
+    border-style: solid;
+    border-width: 1px;
+    border-color: black;
+    border-radius: 5px;
+    padding: 1vw 3vw;
+    background-color: #2196f3;
+  }
+
+  & .changer:hover {
+    cursor: pointer;
+  }
+
+  & #value {
+    border-style: solid;
+    border-width: 1px;
+    border-color: black;
+    border-radius: 5px;
+    padding: 1vw 2vw;
+  }
+}
+
+input {
+  height: 4vw;
+}

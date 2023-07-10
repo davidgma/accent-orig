@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { SettingsService } from 'src/app/services/settings.service';
+import { Setting, SettingsService } from 'src/app/services/settings.service';
 
 @Component({
   selector: 'app-settings',
@@ -9,7 +9,11 @@ import { SettingsService } from 'src/app/services/settings.service';
 export class SettingsComponent {
   constructor(public ss: SettingsService) { }
 
-  isBoolean(value: any): boolean { return (typeof value === "boolean") }
+  // isBoolean(value: any): boolean { return (typeof value === "boolean") }
 
-  isNumeric(value: any): boolean { return (typeof value === "number") }
+  // isNumeric(value: any): boolean { return (typeof value === "number") }
+
+  settingType(setting: Setting<any>) {
+    return setting.dataType;
+  }
 }

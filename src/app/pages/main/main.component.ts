@@ -208,7 +208,8 @@ export class MainComponent {
   private async playAudioBlob() {
     let functionName = 'playAudioBlob';
 
-    await this.ps.play(this.audioAsBlob, this.rs.currentTime);
+    await this.ps.play(this.audioAsBlob,
+      this.rs.currentTime + this.ss.settings.get("playDelay")?.value);
     this.ls.log('Finished playing audio blob', this.moduleName, functionName);
   }
 

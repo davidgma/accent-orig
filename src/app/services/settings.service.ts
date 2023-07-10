@@ -20,7 +20,7 @@ export class SettingsService {
     let centralIcon = new Setting<boolean>(
       "Central icon",
       "Show the record and play icons in the centre (otherwise they will be displayed at the top left",
-      true);
+      true, "Boolean");
     this.settings.set("centralIcon", centralIcon);
     centralIcon.onChange.subscribe((event) => {
       this.ls.log('centralIcon setting changed from '
@@ -31,7 +31,7 @@ export class SettingsService {
     let debugging = new Setting<number>(
       "Debugging level",
       "Debugging level: 0 = none, 1 = normal, 2 = specific.",
-      1);
+      1, "Integer");
     this.settings.set("debugging", debugging);
     debugging.onChange.subscribe((event) => {
       this.ls.log('debugging level setting changed from '
@@ -44,12 +44,27 @@ export class SettingsService {
     let portrait = new Setting<boolean>(
       "Portrait",
       "Show the record and play icons in portrait (otherwise they will be displayed as landscape",
-      true);
+      true, "Boolean");
     this.settings.set("portrait", portrait);
     portrait.onChange.subscribe((event) => {
       this.ls.log('portrait setting changed from '
         + event.from + " to " + event.to, this.moduleName, functionName, 1);
     });
+
+    // Play Delay
+    let playDelay = new Setting<number>(
+      "Play delay",
+      "Time in seconds (including fractions) to skip forwards before starting playback.",
+      1, "OneDecimal");
+    this.settings.set("playDelay", playDelay);
+    debugging.onChange.subscribe((event) => {
+      this.ls.log('playDelay setting changed from '
+        + event.from + " to " + event.to, this.moduleName, functionName, 1);
+      this.ls.debug = event.to;
+    });
+
+
+
   }
 }
 
@@ -57,7 +72,8 @@ export class Setting<Type> {
 
   onChange = new EventEmitter<SettingEvent<Type>>();
 
-  constructor(public name: string = "initial", public description: string = "initial description", private settingValue: Type) { }
+  constructor(public name: string = "initial", public description: string = "initial description", private settingValue: Type,
+  public dataType: string) { }
 
   get value(): Type {
     return this.settingValue;
@@ -81,6 +97,8 @@ export interface SettingEvent<Type> {
   from: Type;
   to: Type;
 }
+
+
 
 
 

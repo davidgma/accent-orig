@@ -7,17 +7,19 @@ import { Setting } from 'src/app/services/settings.service';
   styleUrls: ['./numeric-setting.component.scss']
 })
 export class NumericSettingComponent {
-  @Input() setting = new Setting<number>("initial", "initial", 1);
+  @Input() setting = new Setting<number>("initial", "initial", 1, "OneDecimal");
 
   valueChanged() {
 
     let valueElement = <HTMLParagraphElement>document.getElementById("value");
     if (valueElement !== null) {
       if (valueElement.textContent !== null) {
-        let value = Number.parseInt(valueElement.textContent);
+        let value = Number.parseFloat(valueElement.textContent);
+        value = Math.round(value * 10) / 10;
 
         if (!Number.isNaN(value)) {
-          this.setting.value = Number.parseInt(valueElement.textContent);
+          // this.setting.value = Number.parseFloat(valueElement.textContent);
+          this.setting.value = value;
         }
       }
     }
@@ -25,10 +27,10 @@ export class NumericSettingComponent {
   }
 
   increment() {
-    this.setting.value++;
+    this.setting.value = Math.round((this.setting.value + 0.1) * 10) / 10;
   }
 
   decrement() {
-    this.setting.value--;
+    this.setting.value = Math.round((this.setting.value - 0.1) * 10) / 10;
   }
 }

@@ -7,7 +7,7 @@ import { Setting } from 'src/app/services/settings.service';
   styleUrls: ['./boolean-setting.component.scss']
 })
 export class BooleanSettingComponent {
-  @Input() setting = new Setting<boolean>("initial", "initial", true);
+  @Input() setting = new Setting<boolean>("initial", "initial", true, "Boolean");
 
   value = false;
 

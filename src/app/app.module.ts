@@ -19,6 +19,7 @@ import { IconComponent } from './icons/icon/icon.component';
 import { BooleanSettingComponent } from './utils/boolean-setting/boolean-setting.component';
 import { NumericSettingComponent } from './utils/numeric-setting/numeric-setting.component';
 import { FormsModule } from '@angular/forms';
+import { IntSettingComponent } from './utils/int-setting/int-setting.component';
 
 @NgModule({
   declarations: [
@@ -36,7 +37,8 @@ import { FormsModule } from '@angular/forms';
     DebugComponent,
     IconComponent,
     BooleanSettingComponent,
-    NumericSettingComponent
+    NumericSettingComponent,
+    IntSettingComponent
   ],
   imports: [
     BrowserModule,
