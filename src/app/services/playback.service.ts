@@ -180,6 +180,7 @@ export class PlaybackService {
         + JSON.stringify(event), this.moduleName, functionName, 1);
       if (event.type === "canplaythrough") {
         this.ls.log('Playing...', this.moduleName, functionName, 1);
+        this.ls.log('audio duration: ' + audio.duration, this.moduleName, functionName, 1);
         try {
           await audio.play();
         }
@@ -190,6 +191,7 @@ export class PlaybackService {
 
       if (event.type === "ended") {
         this.ls.log('Finished playing audio.', this.moduleName, functionName, 1);
+        this.ls.log('audio duration on ended: ' + audio.duration, this.moduleName, functionName, 1);
         this.state = PlayingState.Ready;
         this.stateChange.emit(this.state);
       }

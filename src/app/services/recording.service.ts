@@ -403,6 +403,7 @@ export class RecordingService {
         this.latestRecordingDuration =
           (ended.valueOf() - this.startTime.valueOf());
         this.ls.log('RecordingState changed to Paused. Amended latestRecordingDuration: ' + this.latestRecordingDuration + ".", this.moduleName, functionName, 1);
+        this.ls.log("total recording length in seconds: " + (this.currentTime + this.latestRecordingDuration / 1000).toString(), this.moduleName, functionName);
       }
     });
   }
