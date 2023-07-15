@@ -59,6 +59,7 @@ export class RecordingService {
         this.stream = stream;
 
         this.recorder = new MediaRecorder(stream);
+        this.blobs = new Array<Blob>();
         this.monitorRecorder(this.recorder);
         RecordingService.recorderCount++;
         this.ls.log('recorderCount: ' + RecordingService.recorderCount, this.moduleName, functionName, 1);
@@ -238,16 +239,9 @@ export class RecordingService {
   }
 
   async refresh() {
-    // this.recorder?.stop();
     await this.stop();
     await this.start();
     await this.pause();
-    // this.recorder?.start();
-    // this.recorder?.pause();
-    this.startTime = new Date();
-    this.currentTime = 0;
-    this.latestRecordingDuration = 0;
-    this.blobs = new Array<Blob>();
   }
 
   async getData(): Promise<Blob> {
@@ -294,7 +288,6 @@ export class RecordingService {
     this.ls.log('Should be stopped. ' + this.toString(), this.moduleName, functionName, 1);
 
     this.isInitialized = false;
-    this.blobs = new Array<Blob>();
     this.currentTime = 0;
     this.ls.log('Current time should be 0: ' + this.currentTime, this.moduleName, functionName, 1);
     this.startTime = new Date();
