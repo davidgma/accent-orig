@@ -7,6 +7,8 @@ import { SettingsService } from './settings.service';
 export class LoggerService {
   private moduleName = 'LoggerService';
 
+  // Event to request a log of states
+  logState = new EventEmitter<void>();
 
   // This is set by MainComponent.ngOnInit
   debug = 0; // 0 - no debugging, 1 - general, 2 - specific

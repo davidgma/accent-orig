@@ -26,29 +26,25 @@ export class MainComponent {
   direction = "column";
 
   private audioAsBlob = new Blob();
+  private playCount = 0;
 
   constructor(public rs: RecordingService,
     public ps: PlaybackService,
     private ls: LoggerService,
     private em: EnvironmentMonitorService,
-    private ss: SettingsService) {
+    private ss: SettingsService
+  ) {
 
     let functionName = 'constructor';
     this.ls.log('Called.', this.moduleName, functionName, 1);
 
-
-    // Start listening for events
-    this.monitorStates();
-    this.monitorEnvironment();
-    this.monitorSettings();
-
     // iOS doesn't seem to call a gainedFocus
     // at the start or after a refresh so
     // it needs to be done manually
-    this.ls.log('document has focus: ' + document.hasFocus(), this.moduleName, functionName, 1);
-    if (document.hasFocus()) {
-      this.em.onFocus.emit();
-    }
+    // this.ls.log('document has focus: ' + document.hasFocus(), this.moduleName, functionName, 1);
+    // if (document.hasFocus()) {
+    //   this.em.onFocus.emit();
+    // }
 
     this.setIconPosition();
     this.setDirection();
@@ -56,49 +52,20 @@ export class MainComponent {
   }
 
   ngOnInit() {
-    // Setup the audio part - this can only be done once
-    // the template is active
-    this.ps.setupAudio();
-    this.logStates();
 
-  }
-
-  monitorEnvironment() {
+    // Start listening for events
     this.em.onFocus.subscribe(() => {
       this.lockedGainedFocus();
     });
     this.em.onUnfocus.subscribe(() => {
       this.lockedLostFocus();
     });
-  }
 
-  monitorSettings() {
-    let functionName = 'monitorSettings';
-    this.ls.log('Called.', this.moduleName, functionName, 1);
+    // Setup the audio part - this can only be done once
+    // the template is active
+    this.ps.setupAudio();
+    this.logStates();
 
-    let s = <Setting<boolean>>this.ss.settings.get("centralIcon");
-
-    s.onChange.subscribe((event) => {
-
-      this.ls.log('centralIcon 2 setting changed from '
-        + event.from + " to "
-        + event.to, this.moduleName, functionName, 1);
-
-      this.setIconPosition();
-
-    });
-
-    let p = <Setting<boolean>>this.ss.settings.get("portrait");
-
-    p.onChange.subscribe((event) => {
-
-      this.ls.log('portrait setting changed from '
-        + event.from + " to "
-        + event.to, this.moduleName, functionName, 1);
-
-      this.setDirection();
-
-    });
   }
 
   private setIconPosition() {
@@ -130,20 +97,15 @@ export class MainComponent {
     let functionName = 'lostFocus';
     this.ls.log('Called. ', this.moduleName, functionName, 1);
 
-    if (this.rs.state !== RecordingState.Stopped) {
-      await this.rs.stop();
-    }
-    // this.isLosingFocus = false;
+    // this.sts.stopRequest.emit();
+    await this.rs.stop();
     this.ls.log('Final. ', this.moduleName, functionName, 1);
   }
 
   private lockedGainedFocus = this.ls.lock(this.gainedFocus, this);
   async gainedFocus() {
     let functionName = 'gainedFocus';
-
-    this.ls.log('Calling start...', this.moduleName, functionName, 1);
     await this.rs.start();
-    this.ls.log('Calling pause...', this.moduleName, functionName, 1);
     await this.rs.pause();
     this.ps.setupAudio();
 
@@ -151,12 +113,10 @@ export class MainComponent {
 
   private logStates() {
     let functionName = 'logStates';
-    this.ls.log("RecordingService state: " + this.rs.state, this.moduleName, functionName);
-    this.ls.log("PlaybackService state: " + this.ps.state, this.moduleName, functionName);
+    this.ls.logState.emit();
   }
 
-  togglePlay = this.ls.lock(this.togglePlayLocked, this);
-  private async togglePlayLocked() {
+  async togglePlay() {
     let functionName = 'togglePlayLocked';
     this.ls.log('Called.', this.moduleName, functionName, 1);
 
@@ -208,13 +168,23 @@ export class MainComponent {
   private async playAudioBlob() {
     let functionName = 'playAudioBlob';
 
+    this.backgroundColor = "mediumseagreen";
     await this.ps.play(this.audioAsBlob,
       this.rs.currentTime + this.ss.settings.get("playDelay")?.value);
-    this.ls.log('Finished playing audio blob', this.moduleName, functionName);
+      this.ls.log('Finished playing audio blob', this.moduleName, functionName);
+      this.backgroundColor = "ivory";
+
+    // refresh if necessary
+    this.playCount++;
+    // Refresh the recording service if playcount reached
+    let refresh = this.ss.settings.get("refresh")?.value;
+    if (refresh !== null && refresh !== 0 && this.playCount >= refresh) {
+      this.playCount = 0;
+      this.rs.refresh();
+    }
   }
 
-  toggleRecord = this.ls.lock(this.toggleRecordLocked, this);
-  private async toggleRecordLocked() {
+  async toggleRecord() {
     let functionName = 'toggleRecordLocked';
     this.ls.log('Called.', this.moduleName, functionName, 1);
 
@@ -234,10 +204,6 @@ export class MainComponent {
     this.ls.log('record', this.moduleName, functionName);
 
     return new Promise<void>(async (resolve, reject) => {
-      // Check that the recorder is recording
-      // if (this.rs.state !== RecordingState.Recording) {
-      //   await this.rs.start();
-      // }
 
       // Stop any current playing audio
       if (this.ps.state === PlayingState.Playing) {
@@ -246,119 +212,38 @@ export class MainComponent {
 
       switch (this.rs.state) {
         case RecordingState.Paused:
+          this.backgroundColor = "firebrick";
           this.rs.start();
           break;
         case RecordingState.Recording:
-
-          // this.audioAsBlob = await this.rs.getData();
-          // this.ls.log('Blob received size ' + this.audioAsBlob.size, this.moduleName, functionName, 1);
+          this.backgroundColor = "ivory";
           this.rs.getData().then((data) => {
             this.audioAsBlob = data;
           });
           this.rs.pause();
           break;
         case RecordingState.Stopped:
+          this.backgroundColor = "firebrick";
           this.rs.start();
           break;
         case RecordingState.UnInitialized:
+          this.backgroundColor = "firebrick";
           this.rs.start();
       }
     });
 
   }
 
-  private monitorStates() {
-    let functionName = 'monitorStates';
-
-    this.rs.stateChange.subscribe((state: RecordingState) => {
-      this.ls.log('rs.stateChange to ' + state, this.moduleName, functionName, 1);
-      switch (state) {
-        case RecordingState.Paused:
-          this.backgroundColor = "ivory";
-          break;
-        case RecordingState.Recording:
-          this.backgroundColor = "firebrick";
-          break;
-        case RecordingState.Stopped:
-          this.backgroundColor = "ivory";
-          break;
-      }
-    });
-
-    this.ps.stateChange.subscribe((state: PlayingState) => {
-      this.ls.log('ps.stateChange to ' + state, this.moduleName, functionName, 1);
-      switch (state) {
-        case PlayingState.Playing:
-          this.backgroundColor = "mediumseagreen";
-          break;
-        case PlayingState.Ready:
-          this.backgroundColor = "ivory";
-      }
-    });
-
-  }
-
-  // For debugging screen touching
   recordClick() {
     let functionName = 'recordClick';
     this.ls.log('Called.', this.moduleName, functionName, 1);
     this.toggleRecord();
-  }
-  recordMousedown() {
-    let functionName = 'recordMousedown';
-    this.ls.log('Called.', this.moduleName, functionName, 1);
-    // this.toggleRecord();
-  }
-  recordDrag() {
-    let functionName = 'recordDrag';
-    this.ls.log('Initial', this.moduleName, functionName, 1);
-    // this.toggleRecord();
-  }
-  recordDblClick() {
-    let functionName = 'recordDblClick';
-    this.ls.log('Initial', this.moduleName, functionName, 1);
-    // this.toggleRecord();
-  }
-  recordTouchmove() {
-    let functionName = 'recordTouchmove';
-    this.ls.log('Initial', this.moduleName, functionName, 1);
-    // this.toggleRecord();
-  }
-  recordTouchstart() {
-    let functionName = 'recordTouchstart';
-    this.ls.log('Initial', this.moduleName, functionName, 1);
-    // this.toggleRecord();
   }
 
   playClick() {
     let functionName = 'playClick';
     this.ls.log('Called.', this.moduleName, functionName, 1);
     this.togglePlay();
-  }
-  playMousedown() {
-    let functionName = 'playMousedown';
-    this.ls.log('Called.', this.moduleName, functionName, 1);
-    // this.togglePlay();
-  }
-  playDrag() {
-    let functionName = 'playDrag';
-    this.ls.log('Initial', this.moduleName, functionName, 1);
-    // this.togglePlay();
-  }
-  playDblClick() {
-    let functionName = 'playDblClick';
-    this.ls.log('Initial', this.moduleName, functionName, 1);
-    // this.togglePlay();
-  }
-  playTouchmove() {
-    let functionName = 'playTouchmove';
-    this.ls.log('Initial', this.moduleName, functionName, 1);
-    // this.togglePlay();
-  }
-  playTouchstart() {
-    let functionName = 'playTouchstart';
-    this.ls.log('Initial', this.moduleName, functionName, 1);
-    // this.togglePlay();
   }
 
 }

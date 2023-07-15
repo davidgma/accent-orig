@@ -1,5 +1,6 @@
 import { EventEmitter, Injectable } from '@angular/core';
 import { LoggerService } from './logger.service';
+import { SettingsService } from './settings.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,8 +13,7 @@ export class PlaybackService {
   private audio: HTMLAudioElement | null = null;
   private source: HTMLSourceElement | null = null;
 
-  constructor(private ls: LoggerService) {
-
+  constructor(private ls: LoggerService, private ss: SettingsService) {
   }
 
   public setupAudio() {
@@ -33,8 +33,6 @@ export class PlaybackService {
       if (this.source == null) {
         this.source = this.createSourceForAudioElement();
       }
-
-      // this.audio.autoplay = true;
 
       this.state = PlayingState.Ready;
       this.stateChange.emit(this.state);
@@ -89,28 +87,22 @@ export class PlaybackService {
             this.source.type = BlobType
 
             if (this.audio !== null) {
+
+              // Listen for the end of play
+              const playEnd = async () => {
+                this.audio?.removeEventListener("ended", playEnd);
+                this.endOfPlay();
+                resolve();
+              };
+              this.audio.addEventListener("ended", playEnd);
+
               //call the load method as it is used to update the audio element after changing the source or other settings
               this.audio.load();
               //play the audio after successfully setting new src and type that corresponds to the recorded audio
               this.ls.log('Playing blob audio...', this.moduleName, functionName);
               this.ls.log('currentTime: ' + currentTime, this.moduleName, functionName, 1);
               this.audio.currentTime = currentTime;
-              // this.audio?.addEventListener("ended", () => {
-              //   this.ls.log('Finished playing audio.', this.moduleName, functionName, 1);
-              //   this.state = PlayingState.Ready;
-              //   this.stateChange.emit(this.state);
-              //   resolve();
-              // });
-              // this.audio?.addEventListener("error", (event: Event) => {
-              //   this.ls.log('Error playing audio: ' + event.type, this.moduleName, functionName, 1);
-              // });
-              // try {
-              //   await this.audio.play();
-              // }
-              // catch (error) {
-              //   this.ls.log('Error: ' + error, this.moduleName, functionName, 1);
-              // }
-              resolve();
+
 
             }
           }
@@ -127,14 +119,11 @@ export class PlaybackService {
   private createSourceForAudioElement(): HTMLSourceElement {
 
     let sourceElement = document.createElement("source");
-    // this.ls.log("sourceElement: " + JSON.stringify(sourceElement));
 
     let audioElement = <HTMLAudioElement>document.getElementsByClassName("audio-element")[0];
-    // this.ls.log("audioElement: " + JSON.stringify(audioElement));
     audioElement.appendChild(sourceElement);
     return sourceElement;
 
-    // this.audioElementSource = sourceElement;
   }
 
   // Cancel any currently playing audio.
@@ -189,15 +178,18 @@ export class PlaybackService {
         }
       }
 
-      if (event.type === "ended") {
-        this.ls.log('Finished playing audio.', this.moduleName, functionName, 1);
-        this.ls.log('audio duration on ended: ' + audio.duration, this.moduleName, functionName, 1);
-        this.state = PlayingState.Ready;
-        this.stateChange.emit(this.state);
-      }
     });
   }
 
+  private endOfPlay() {
+    let functionName = 'endOfPlay';
+
+    this.ls.log('audio duration on ended: ' + this.audio?.duration, this.moduleName, functionName, 1);
+    this.state = PlayingState.Ready;
+    this.stateChange.emit(this.state);
+
+
+  }
 
 
 }
@@ -207,3 +199,10 @@ export enum PlayingState {
   Playing = "Playing",
   Ready = "Ready"
 }
+
+
+//
+//
+//
+//
+

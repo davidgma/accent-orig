@@ -63,7 +63,18 @@ export class SettingsService {
       this.ls.debug = event.to;
     });
 
-
+    // Refresh number - the number of plays before a
+    // refresh is triggered. 0 for never.
+    let refresh = new Setting<number>(
+      "Refresh after",
+      "Number of plays before a refresh, 0 to never refresh.",
+      1, "Integer");
+    this.settings.set("refresh", refresh);
+    refresh.onChange.subscribe((event) => {
+      this.ls.log('refresh level setting changed from '
+        + event.from + " to " + event.to, this.moduleName, functionName, 1);
+      this.ls.debug = event.to;
+    });
 
   }
 }
