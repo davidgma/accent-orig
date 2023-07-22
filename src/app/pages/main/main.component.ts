@@ -140,6 +140,7 @@ export class MainComponent {
       // Cancel any audio currently playing
       if (this.ps.state === PlayingState.Playing) {
         this.ps.cancel();
+        this.backgroundColor = "ivory";
         resolve();
         return;
       }
