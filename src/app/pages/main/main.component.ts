@@ -27,6 +27,7 @@ export class MainComponent {
 
   private audioAsBlob = new Blob();
   private playCount = 0;
+  private audioBlobStartTime = 0;
 
   constructor(public rs: RecordingService,
     public ps: PlaybackService,
@@ -155,6 +156,7 @@ export class MainComponent {
 
         let blob = await this.rs.getData();
         this.audioAsBlob = blob;
+        this.audioBlobStartTime = this.rs.currentTime;
         this.rs.pause();
         this.playAudioBlob();
       }
@@ -171,7 +173,9 @@ export class MainComponent {
 
     this.backgroundColor = "mediumseagreen";
     await this.ps.play(this.audioAsBlob,
-      this.rs.currentTime + this.ss.settings.get("playDelay")?.value);
+      //this.rs.currentTime
+      this.audioBlobStartTime
+      + this.ss.settings.get("playDelay")?.value);
       this.ls.log('Finished playing audio blob', this.moduleName, functionName);
       this.backgroundColor = "ivory";
 
@@ -220,6 +224,7 @@ export class MainComponent {
           this.backgroundColor = "ivory";
           this.rs.getData().then((data) => {
             this.audioAsBlob = data;
+            this.audioBlobStartTime = this.rs.currentTime;
           });
           this.rs.pause();
           break;
